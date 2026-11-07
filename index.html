@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,31 +7,203 @@
 
     <title>Rabeka | Cloud & AI Engineering</title>
 
+    <meta name="description" content="Exploring cloud infrastructure, platform engineering, AWS and AI systems.">
+
     <style>
-        body {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
             background-color: #080d18;
             color: #e8eef8;
             font-family: Arial, sans-serif;
+        }
+
+        /* NAVIGATION */
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 22px 8%;
+            background: #0b1220;
+            border-bottom: 1px solid #17243a;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+
+        .logo span {
+            color: #00aaff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: #a9b7cc;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #00aaff;
+        }
+
+        /* HOMEPAGE HERO */
+
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px 12%;
+            background:
+                radial-gradient(
+                    ellipse at 80% 30%,
+                    rgba(0, 120, 255, 0.12),
+                    transparent 45%
+                );
+        }
+
+        .hero-label {
+            color: #00aaff;
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 {
+            font-size: clamp(42px, 7vw, 76px);
+            line-height: 1.12;
+            max-width: 850px;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 span {
+            color: #00aaff;
+        }
+
+        .hero p {
+            color: #9baac0;
+            font-size: 18px;
+            line-height: 1.8;
+            max-width: 650px;
+        }
+
+        .hero-button {
+            display: inline-block;
+            margin-top: 35px;
+            padding: 14px 26px;
+            border: 1px solid #008cff;
+            border-radius: 4px;
+            color: #ffffff;
+            text-decoration: none;
+            width: fit-content;
+            transition: 0.3s ease;
+        }
+
+        .hero-button:hover {
+            background: #008cff;
+            box-shadow: 0 0 25px rgba(0, 140, 255, 0.3);
+        }
+
+        /* FOOTER */
+
+        footer {
+            padding: 25px 8%;
+            border-top: 1px solid #17243a;
+            color: #708097;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* MOBILE RESPONSIVENESS */
+
+        @media (max-width: 700px) {
+            .navbar {
+                flex-direction: column;
+                gap: 20px;
+                padding: 22px 5%;
+            }
+
+            .nav-links {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .hero {
+                padding: 70px 7%;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 
 <body>
+
     <nav class="navbar">
-    <div class="logo">RABEKA<span>.</span></div>
+        <div class="logo">RABEKA<span>.</span></div>
 
-    <div class="nav-links">
-        <a href="#home">Home</a>
-        <a href="#engineering">Engineering</a>
-        <a href="#research">Research</a>
-        <a href="#writing">Writing</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-    </div>
-</nav>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#engineering">Engineering</a>
+            <a href="#research">Research</a>
+            <a href="#writing">Writing</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
 
-    <h1>Rabeka</h1>
+    <main>
+        <section class="hero" id="home">
+
+            <div class="hero-label">
+                Cloud Infrastructure | Platform Engineering | AI
+            </div>
+
+            <h1>
+                Building at the intersection of
+                <span>Cloud & AI.</span>
+            </h1>
+
+            <p>
+                Exploring modern cloud infrastructure,
+                platform engineering, automation and
+                intelligent systems through engineering
+                projects, technical research and practical learning.
+            </p>
+
+            <a href="#engineering" class="hero-button">
+                Explore Engineering →
+            </a>
+
+        </section>
+    </main>
+
+    <footer>
+        © 2026 Rabeka. Cloud Infrastructure & AI Engineering.
+    </footer>
 
 </body>
 </html>
+
