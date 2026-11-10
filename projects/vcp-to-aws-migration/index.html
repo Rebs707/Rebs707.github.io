@@ -1,0 +1,736 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080e1b">
+<meta name="description" content="VCP to AWS Migration Simulation — Cloud Infrastructure Engineering Case Study by Rabeka Alexander.">
+<title>VCP to AWS Migration | Rabeka Alexander</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #080e1b;
+  --surface: #0e1728;
+  --surface2: #121f34;
+  --border: rgba(135,166,210,.16);
+  --text: #edf4ff;
+  --muted: #9aabc3;
+  --blue: #58a6ff;
+  --cyan: #65d9e8;
+  --max: 1160px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 80% 0%, rgba(34,92,170,.16), transparent 35%),
+    radial-gradient(ellipse at 0% 45%, rgba(25,111,145,.08), transparent 32%),
+    var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", sans-serif;
+  line-height: 1.7;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  width: min(var(--max), calc(100% - 48px));
+  margin: auto;
+}
+
+header {
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(8,14,27,.92);
+  backdrop-filter: blur(14px);
+}
+
+.nav {
+  min-height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.5px;
+}
+
+.logo span {
+  color: var(--blue);
+}
+
+.nav-links {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.nav-links a:hover,
+.back-link:hover {
+  color: var(--cyan);
+}
+
+.hero {
+  padding: 85px 0 55px;
+}
+
+.eyebrow {
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+h1, h2, h3 {
+  font-family: "Space Grotesk", sans-serif;
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: clamp(36px, 6vw, 58px);
+  letter-spacing: -2px;
+  max-width: 850px;
+  margin-bottom: 20px;
+}
+
+.hero-description {
+  color: var(--muted);
+  max-width: 760px;
+  font-size: 16px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.meta span,
+.tag {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 30px;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 11px 17px;
+  border-radius: 7px;
+  background: var(--blue);
+  color: #07101e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0,1fr);
+  gap: 45px;
+  padding: 35px 0 90px;
+}
+
+.sidebar {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+  border-left: 1px solid var(--border);
+  padding-left: 18px;
+}
+
+.sidebar strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+
+.sidebar a {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 7px 0;
+}
+
+.sidebar a:hover {
+  color: var(--cyan);
+}
+
+.content section {
+  padding: 0 0 45px;
+  margin-bottom: 35px;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-top: 100px;
+}
+
+.content h2 {
+  font-size: 25px;
+  margin-bottom: 18px;
+}
+
+.content h3 {
+  font-size: 16px;
+  margin: 25px 0 10px;
+}
+
+.content p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.content ul,
+.content ol {
+  color: var(--muted);
+  padding-left: 22px;
+  font-size: 14px;
+}
+
+.content li {
+  margin: 8px 0;
+}
+
+.panel {
+  background: linear-gradient(145deg, var(--surface), rgba(18,31,52,.75));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  margin: 18px 0;
+}
+
+.panel h3 {
+  margin-top: 0;
+  color: var(--text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.card h3 {
+  margin: 0 0 9px;
+  font-size: 15px;
+}
+
+.card p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.architecture {
+  border: 1px dashed rgba(101,217,232,.4);
+  border-radius: 10px;
+  background: rgba(20,50,75,.18);
+  padding: 28px 18px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.architecture .node {
+  display: inline-block;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px 16px;
+  margin: 7px;
+  font-size: 12px;
+  color: var(--cyan);
+}
+
+.architecture .arrow {
+  color: var(--blue);
+  padding: 0 5px;
+}
+
+.note {
+  border-left: 3px solid var(--blue);
+  padding: 13px 17px;
+  background: rgba(88,166,255,.07);
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+footer .container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+@media(max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .sidebar {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    border-left: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 0 18px;
+  }
+
+  .sidebar strong {
+    width: 100%;
+  }
+
+  .sidebar a {
+    padding: 0;
+  }
+}
+
+@media(max-width: 540px) {
+  .container {
+    width: min(100% - 30px, var(--max));
+  }
+
+  .hero {
+    padding: 55px 0 35px;
+  }
+
+  .nav {
+    padding: 12px 0;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content h2 {
+    font-size: 22px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="container nav">
+    <a class="logo" href="../../index.html">RABEKA ALEXANDER<span>.</span></a>
+    <nav class="nav-links">
+      <a href="../../index.html">Home</a>
+      <a href="../../index.html#engineering">Engineering</a>
+      <a href="../../index.html#research">Research</a>
+      <a href="../../index.html#writing">Writing</a>
+      <a href="../../index.html#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="hero">
+    <div class="eyebrow">Engineering Case Study / Cloud Infrastructure</div>
+
+    <h1>VCP to AWS Migration Simulation</h1>
+
+    <p class="hero-description">
+      An enterprise-style simulation of a Versa Controller Platform
+      migration to AWS, covering infrastructure provisioning,
+      automation, observability, validation and operational recovery.
+    </p>
+
+    <div class="meta">
+      <span>Cloud Infrastructure</span>
+      <span>AWS</span>
+      <span>Terraform</span>
+      <span>Migration Engineering</span>
+      <span>Simulation</span>
+    </div>
+
+    <div class="actions">
+      <a class="btn" href="https://github.com/Rebs707/vcp-to-aws-migration-simulation" target="_blank" rel="noopener">View GitHub Repository ↗</a>
+      <a class="btn secondary" href="../../index.html#engineering">Back to Engineering Portfolio</a>
+    </div>
+  </section>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+      <strong>CASE STUDY CONTENTS</strong>
+      <a href="#overview">01. Overview</a>
+      <a href="#problem">02. Problem Definition</a>
+      <a href="#architecture">03. Architecture</a>
+      <a href="#stack">04. Technology Stack</a>
+      <a href="#implementation">05. Implementation</a>
+      <a href="#decisions">06. Engineering Decisions</a>
+      <a href="#failures">07. Failure Scenarios</a>
+      <a href="#testing">08. Testing & Validation</a>
+      <a href="#results">09. Results & Learnings</a>
+      <a href="#documentation">10. Source & Documentation</a>
+    </aside>
+
+    <div class="content">
+
+      <section id="overview">
+        <h2>01. Project Overview</h2>
+
+        <p>
+          Describe the project, its objectives, the migration scope
+          and the engineering capabilities demonstrated.
+        </p>
+
+        <div class="panel">
+          <h3>Project Objectives</h3>
+          <ul>
+            <li>Define the target AWS infrastructure environment.</li>
+            <li>Automate infrastructure provisioning using Terraform.</li>
+            <li>Implement migration validation and operational checks.</li>
+            <li>Establish monitoring and operational visibility.</li>
+            <li>Document recovery procedures and operational runbooks.</li>
+          </ul>
+        </div>
+
+        <p>
+          <strong>Project status:</strong> Replace this with the
+          accurate implementation status and scope.
+        </p>
+      </section>
+
+      <section id="problem">
+        <h2>02. Problem Definition</h2>
+
+        <p>
+          Explain the infrastructure or operational problem being
+          addressed by this migration simulation.
+        </p>
+
+        <div class="grid">
+          <div class="card">
+            <h3>Source Environment</h3>
+            <p>[Describe the simulated source platform and its constraints.]</p>
+          </div>
+
+          <div class="card">
+            <h3>Target Environment</h3>
+            <p>[Describe the intended AWS environment and target capabilities.]</p>
+          </div>
+
+          <div class="card">
+            <h3>Migration Challenges</h3>
+            <p>[Document dependencies, configuration, connectivity and validation challenges.]</p>
+          </div>
+
+          <div class="card">
+            <h3>Success Criteria</h3>
+            <p>[Define the measurable conditions used to validate the simulation.]</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <h2>03. Architecture & System Design</h2>
+
+        <p>
+          Describe the actual architecture implemented in the repository.
+          Replace the illustrative flow below with a verified architecture.
+        </p>
+
+        <div class="architecture">
+          <div class="node">Source VCP Environment</div>
+          <div class="arrow">↓</div>
+          <div class="node">Migration Automation</div>
+          <div class="arrow">↓</div>
+          <div class="node">AWS Infrastructure</div>
+          <div class="arrow">↓</div>
+          <div class="node">Monitoring & Validation</div>
+          <div class="arrow">↓</div>
+          <div class="node">Operational Runbooks</div>
+        </div>
+
+        <div class="note">
+          Architecture illustration only. Confirm every component,
+          integration and data flow against the actual implementation
+          before treating this as the final architecture.
+        </div>
+
+        <h3>Architecture Components</h3>
+        <ul>
+          <li>[Component 1 — responsibility and interaction]</li>
+          <li>[Component 2 — responsibility and interaction]</li>
+          <li>[Component 3 — responsibility and interaction]</li>
+          <li>[Monitoring and operational components]</li>
+        </ul>
+      </section>
+
+      <section id="stack">
+        <h2>04. Technology Stack</h2>
+
+        <p>
+          List the technologies actually used in the project.
+          Remove tools that are not implemented.
+        </p>
+
+        <div class="tags">
+          <span class="tag">AWS</span>
+          <span class="tag">Terraform</span>
+          <span class="tag">Linux</span>
+          <span class="tag">Shell Scripting</span>
+          <span class="tag">CloudWatch</span>
+          <span class="tag">Monitoring</span>
+          <span class="tag">Git</span>
+        </div>
+
+        <div class="panel">
+          <h3>Technology Responsibilities</h3>
+          <p>[Explain why each major technology was selected and what it does.]</p>
+        </div>
+      </section>
+
+      <section id="implementation">
+        <h2>05. Implementation Walkthrough</h2>
+
+        <p>
+          Document the actual engineering workflow, from initial
+          infrastructure setup to migration validation.
+        </p>
+
+        <div class="panel">
+          <h3>Phase 1 — Infrastructure Provisioning</h3>
+          <p>[Terraform modules, resources, configuration and provisioning steps.]</p>
+        </div>
+
+        <div class="panel">
+          <h3>Phase 2 — Migration Automation</h3>
+          <p>[Scripts, automation workflows and migration execution steps.]</p>
+        </div>
+
+        <div class="panel">
+          <h3>Phase 3 — Monitoring & Observability</h3>
+          <p>[Monitoring configuration, metrics, alarms and operational visibility.]</p>
+        </div>
+
+        <div class="panel">
+          <h3>Phase 4 — Operational Readiness</h3>
+          <p>[Validation, incident simulation, runbooks and recovery procedures.]</p>
+        </div>
+      </section>
+
+      <section id="decisions">
+        <h2>06. Engineering Decisions & Trade-offs</h2>
+
+        <p>
+          Explain the important implementation choices and the
+          trade-offs involved.
+        </p>
+
+        <div class="grid">
+          <div class="card">
+            <h3>Decision 01</h3>
+            <p><strong>Choice:</strong> [Document the decision.]</p>
+            <p><strong>Reason:</strong> [Explain the rationale.]</p>
+          </div>
+
+          <div class="card">
+            <h3>Decision 02</h3>
+            <p><strong>Choice:</strong> [Document the decision.]</p>
+            <p><strong>Reason:</strong> [Explain the rationale.]</p>
+          </div>
+        </div>
+
+        <div class="note">
+          Include alternatives considered, limitations and the
+          consequences of each decision.
+        </div>
+      </section>
+
+      <section id="failures">
+        <h2>07. Failure Scenarios & Fixes</h2>
+
+        <p>
+          Document failures that were actually encountered or
+          deliberately simulated, along with the troubleshooting process.
+        </p>
+
+        <div class="panel">
+          <h3>Failure Scenario 01 — [Scenario name]</h3>
+          <p><strong>Symptom:</strong> [What happened?]</p>
+          <p><strong>Investigation:</strong> [How was the cause identified?]</p>
+          <p><strong>Resolution:</strong> [What corrective action was taken?]</p>
+          <p><strong>Prevention:</strong> [What control prevents recurrence?]</p>
+        </div>
+
+        <div class="panel">
+          <h3>Failure Scenario 02 — [Scenario name]</h3>
+          <p><strong>Symptom:</strong> [What happened?]</p>
+          <p><strong>Investigation:</strong> [How was the cause identified?]</p>
+          <p><strong>Resolution:</strong> [What corrective action was taken?]</p>
+          <p><strong>Prevention:</strong> [What control prevents recurrence?]</p>
+        </div>
+      </section>
+
+      <section id="testing">
+        <h2>08. Testing & Validation</h2>
+
+        <p>
+          Describe the tests performed and the evidence collected.
+          Distinguish planned tests from executed tests.
+        </p>
+
+        <div class="grid">
+          <div class="card">
+            <h3>Infrastructure Validation</h3>
+            <p>[Terraform validation, resource checks and configuration tests.]</p>
+          </div>
+
+          <div class="card">
+            <h3>Automation Validation</h3>
+            <p>[Script execution, workflow checks and error handling.]</p>
+          </div>
+
+          <div class="card">
+            <h3>Monitoring Validation</h3>
+            <p>[Metric collection, alarm behaviour and monitoring checks.]</p>
+          </div>
+
+          <div class="card">
+            <h3>Recovery Validation</h3>
+            <p>[Incident scenarios, recovery steps and observed outcomes.]</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="results">
+        <h2>09. Results & Engineering Learnings</h2>
+
+        <p>
+          Summarise the outcomes supported by implementation evidence.
+          Do not add unmeasured performance or availability claims.
+        </p>
+
+        <h3>Engineering Outcomes</h3>
+        <ul>
+          <li>[Verified infrastructure outcome]</li>
+          <li>[Verified automation outcome]</li>
+          <li>[Verified monitoring or validation outcome]</li>
+        </ul>
+
+        <h3>Key Learnings</h3>
+        <ul>
+          <li>[Infrastructure design learning]</li>
+          <li>[Automation and operational learning]</li>
+          <li>[Reliability and troubleshooting learning]</li>
+        </ul>
+
+        <div class="note">
+          Clearly identify the work as a simulation where applicable.
+          Do not present simulated outcomes as production migration results.
+        </div>
+      </section>
+
+      <section id="documentation">
+        <h2>10. Source Code & Documentation</h2>
+
+        <p>
+          Explore the implementation, supporting architecture,
+          automation scripts and operational documentation.
+        </p>
+
+        <div class="panel">
+          <h3>Project Repository</h3>
+          <p>
+            <a href="https://github.com/Rebs707/vcp-to-aws-migration-simulation"
+               target="_blank" rel="noopener"
+               style="color:var(--cyan)">
+              View source code and project documentation ↗
+            </a>
+          </p>
+        </div>
+
+        <h3>Supporting Documentation</h3>
+        <ul>
+          <li>[Architecture documentation link]</li>
+          <li>[Terraform implementation notes]</li>
+          <li>[Operational runbooks]</li>
+          <li>[Troubleshooting documentation]</li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span>© 2026 Rabeka Alexander. Cloud Infrastructure & Platform Engineering.</span>
+    <a href="../../index.html" style="color:var(--cyan)">Return to main website ↑</a>
+  </div>
+</footer>
+
+</body>
+</html>
