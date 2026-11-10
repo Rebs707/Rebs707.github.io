@@ -1,736 +1,199 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080e1b">
-<meta name="description" content="VCP to AWS Migration Simulation — Cloud Infrastructure Engineering Case Study by Rabeka Alexander.">
-<title>VCP to AWS Migration | Rabeka Alexander</title>
-
+<meta name="description" content="An evidence-based case study of an enterprise VCP-to-AWS migration simulation, covering Terraform infrastructure, Bash workflow automation, validation, observability and operational recovery.">
+<title>VCP to AWS Migration Simulation | Rabeka Alexander</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
-:root {
-  --bg: #080e1b;
-  --surface: #0e1728;
-  --surface2: #121f34;
-  --border: rgba(135,166,210,.16);
-  --text: #edf4ff;
-  --muted: #9aabc3;
-  --blue: #58a6ff;
-  --cyan: #65d9e8;
-  --max: 1160px;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  scroll-behavior: smooth;
-}
-
-body {
-  background:
-    radial-gradient(ellipse at 80% 0%, rgba(34,92,170,.16), transparent 35%),
-    radial-gradient(ellipse at 0% 45%, rgba(25,111,145,.08), transparent 32%),
-    var(--bg);
-  color: var(--text);
-  font-family: "DM Sans", sans-serif;
-  line-height: 1.7;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.container {
-  width: min(var(--max), calc(100% - 48px));
-  margin: auto;
-}
-
-header {
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(8,14,27,.92);
-  backdrop-filter: blur(14px);
-}
-
-.nav {
-  min-height: 70px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-}
-
-.logo {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -.5px;
-}
-
-.logo span {
-  color: var(--blue);
-}
-
-.nav-links {
-  display: flex;
-  gap: 22px;
-  flex-wrap: wrap;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.nav-links a:hover,
-.back-link:hover {
-  color: var(--cyan);
-}
-
-.hero {
-  padding: 85px 0 55px;
-}
-
-.eyebrow {
-  color: var(--cyan);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 11px;
-  font-weight: 700;
-  margin-bottom: 18px;
-}
-
-h1, h2, h3 {
-  font-family: "Space Grotesk", sans-serif;
-  line-height: 1.25;
-}
-
-h1 {
-  font-size: clamp(36px, 6vw, 58px);
-  letter-spacing: -2px;
-  max-width: 850px;
-  margin-bottom: 20px;
-}
-
-.hero-description {
-  color: var(--muted);
-  max-width: 760px;
-  font-size: 16px;
-}
-
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 28px;
-}
-
-.meta span,
-.tag {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 30px;
-  padding: 6px 12px;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.actions {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 30px;
-}
-
-.btn {
-  display: inline-block;
-  padding: 11px 17px;
-  border-radius: 7px;
-  background: var(--blue);
-  color: #07101e;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.btn.secondary {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 230px minmax(0,1fr);
-  gap: 45px;
-  padding: 35px 0 90px;
-}
-
-.sidebar {
-  position: sticky;
-  top: 100px;
-  align-self: start;
-  border-left: 1px solid var(--border);
-  padding-left: 18px;
-}
-
-.sidebar strong {
-  display: block;
-  font-size: 12px;
-  margin-bottom: 15px;
-}
-
-.sidebar a {
-  display: block;
-  font-size: 12px;
-  color: var(--muted);
-  padding: 7px 0;
-}
-
-.sidebar a:hover {
-  color: var(--cyan);
-}
-
-.content section {
-  padding: 0 0 45px;
-  margin-bottom: 35px;
-  border-bottom: 1px solid var(--border);
-  scroll-margin-top: 100px;
-}
-
-.content h2 {
-  font-size: 25px;
-  margin-bottom: 18px;
-}
-
-.content h3 {
-  font-size: 16px;
-  margin: 25px 0 10px;
-}
-
-.content p {
-  color: var(--muted);
-  font-size: 14px;
-  margin-bottom: 15px;
-}
-
-.content ul,
-.content ol {
-  color: var(--muted);
-  padding-left: 22px;
-  font-size: 14px;
-}
-
-.content li {
-  margin: 8px 0;
-}
-
-.panel {
-  background: linear-gradient(145deg, var(--surface), rgba(18,31,52,.75));
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 22px;
-  margin: 18px 0;
-}
-
-.panel h3 {
-  margin-top: 0;
-  color: var(--text);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px;
-}
-
-.card h3 {
-  margin: 0 0 9px;
-  font-size: 15px;
-}
-
-.card p {
-  margin: 0;
-  font-size: 13px;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 15px;
-}
-
-.architecture {
-  border: 1px dashed rgba(101,217,232,.4);
-  border-radius: 10px;
-  background: rgba(20,50,75,.18);
-  padding: 28px 18px;
-  text-align: center;
-  margin: 20px 0;
-}
-
-.architecture .node {
-  display: inline-block;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 12px 16px;
-  margin: 7px;
-  font-size: 12px;
-  color: var(--cyan);
-}
-
-.architecture .arrow {
-  color: var(--blue);
-  padding: 0 5px;
-}
-
-.note {
-  border-left: 3px solid var(--blue);
-  padding: 13px 17px;
-  background: rgba(88,166,255,.07);
-  margin: 18px 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-footer {
-  border-top: 1px solid var(--border);
-  padding: 28px 0;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-footer .container {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-@media(max-width: 800px) {
-  .layout {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-
-  .sidebar {
-    position: static;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 18px;
-    border-left: 0;
-    border-bottom: 1px solid var(--border);
-    padding: 0 0 18px;
-  }
-
-  .sidebar strong {
-    width: 100%;
-  }
-
-  .sidebar a {
-    padding: 0;
-  }
-}
-
-@media(max-width: 540px) {
-  .container {
-    width: min(100% - 30px, var(--max));
-  }
-
-  .hero {
-    padding: 55px 0 35px;
-  }
-
-  .nav {
-    padding: 12px 0;
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .nav-links {
-    gap: 12px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .content h2 {
-    font-size: 22px;
-  }
-}
+:root{--bg:#080e1b;--surface:#0e1728;--surface2:#121f34;--border:rgba(135,166,210,.16);--text:#edf4ff;--muted:#9aabc3;--blue:#58a6ff;--cyan:#65d9e8;--green:#8bd5a8;--amber:#f1c879;--max:1160px}
+*{margin:0;padding:0;box-sizing:border-box;scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 80% 0%,rgba(34,92,170,.16),transparent 35%),radial-gradient(ellipse at 0% 45%,rgba(25,111,145,.08),transparent 32%),var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;line-height:1.7}
+a{color:inherit;text-decoration:none}.container{width:min(var(--max),calc(100% - 48px));margin:auto}
+header{border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;background:rgba(8,14,27,.94);backdrop-filter:blur(14px)}
+.nav{min-height:70px;display:flex;justify-content:space-between;align-items:center;gap:20px}.logo{font-family:"Space Grotesk",sans-serif;font-size:19px;font-weight:700;letter-spacing:-.5px}.logo span{color:var(--blue)}
+.nav-links{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:var(--muted)}.nav-links a:hover,.back-link:hover{color:var(--cyan)}
+.hero{padding:82px 0 48px}.eyebrow{color:var(--cyan);text-transform:uppercase;letter-spacing:2px;font-size:11px;font-weight:700;margin-bottom:18px}
+h1,h2,h3{font-family:"Space Grotesk",sans-serif;line-height:1.25}h1{font-size:clamp(36px,6vw,58px);letter-spacing:-2px;max-width:900px;margin-bottom:20px}
+.hero-description{color:var(--muted);max-width:800px;font-size:16px}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.meta span,.tag{border:1px solid var(--border);background:var(--surface);border-radius:30px;padding:6px 12px;font-size:11px;color:var(--muted)}
+.actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-block;padding:11px 17px;border-radius:7px;background:var(--blue);color:#07101e;font-size:13px;font-weight:700}.btn.secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:45px;padding:30px 0 90px}.sidebar{position:sticky;top:100px;align-self:start;border-left:1px solid var(--border);padding-left:18px}
+.sidebar strong{display:block;font-size:12px;margin-bottom:15px}.sidebar a{display:block;font-size:12px;color:var(--muted);padding:7px 0}.sidebar a:hover{color:var(--cyan)}
+.content section{padding:0 0 42px;margin-bottom:34px;border-bottom:1px solid var(--border);scroll-margin-top:100px}.content h2{font-size:25px;margin-bottom:18px}.content h3{font-size:16px;margin:23px 0 10px}.content p{color:var(--muted);font-size:14px;margin-bottom:14px}
+.content ul,.content ol{color:var(--muted);padding-left:22px;font-size:14px}.content li{margin:7px 0}
+.panel{background:linear-gradient(145deg,var(--surface),rgba(18,31,52,.75));border:1px solid var(--border);border-radius:12px;padding:21px;margin:17px 0}.panel h3{margin-top:0;color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:17px}.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px}.card h3{margin:0 0 8px;font-size:15px}.card p{margin:0;font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.architecture{border:1px solid rgba(101,217,232,.25);border-radius:12px;background:rgba(20,50,75,.16);padding:22px;margin:20px 0}
+.arch-row{display:flex;justify-content:center;align-items:stretch;gap:9px;flex-wrap:wrap}.arch-node{flex:1 1 145px;max-width:220px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 10px;text-align:center;font-size:12px;color:var(--cyan)}
+.arch-node small{display:block;color:var(--muted);font-size:10px;margin-top:5px}.arch-arrow{text-align:center;color:var(--blue);font-size:20px;padding:5px}
+.note{border-left:3px solid var(--blue);padding:13px 17px;background:rgba(88,166,255,.07);margin:17px 0;color:var(--muted);font-size:13px}
+.status{display:inline-block;border:1px solid rgba(139,213,168,.28);color:var(--green);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}
+.warning{border-left-color:var(--amber);background:rgba(241,200,121,.06)}
+code{font-family:Consolas,monospace;color:#b9dcff;background:rgba(88,166,255,.08);padding:2px 5px;border-radius:4px;font-size:.92em}
+footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);font-size:12px}footer .container{display:flex;justify-content:space-between;flex-wrap:wrap;gap:15px}
+@media(max-width:800px){.layout{grid-template-columns:1fr;gap:28px}.sidebar{position:static;display:flex;flex-wrap:wrap;gap:9px 16px;border-left:0;border-bottom:1px solid var(--border);padding:0 0 17px}.sidebar strong{width:100%}.sidebar a{padding:0}}
+@media(max-width:540px){.container{width:min(100% - 30px,var(--max))}.hero{padding:52px 0 32px}.nav{padding:12px 0;align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.grid{grid-template-columns:1fr}.content h2{font-size:22px}.architecture{padding:14px 9px}}
 </style>
 </head>
-
 <body>
-
-<header>
-  <div class="container nav">
-    <a class="logo" href="../../index.html">RABEKA ALEXANDER<span>.</span></a>
-    <nav class="nav-links">
-      <a href="../../index.html">Home</a>
-      <a href="../../index.html#engineering">Engineering</a>
-      <a href="../../index.html#research">Research</a>
-      <a href="../../index.html#writing">Writing</a>
-      <a href="../../index.html#contact">Contact</a>
-    </nav>
-  </div>
-</header>
-
+<header><div class="container nav">
+<a class="logo" href="../../index.html">RABEKA ALEXANDER<span>.</span></a>
+<nav class="nav-links" aria-label="Main navigation">
+<a href="../../index.html">Home</a><a href="../../index.html#engineering">Engineering</a><a href="../../index.html#research">Research</a><a href="../../index.html#writing">Writing</a><a href="../../index.html#contact">Contact</a>
+</nav></div></header>
 <main class="container">
-
-  <section class="hero">
-    <div class="eyebrow">Engineering Case Study / Cloud Infrastructure</div>
-
-    <h1>VCP to AWS Migration Simulation</h1>
-
-    <p class="hero-description">
-      An enterprise-style simulation of a Versa Controller Platform
-      migration to AWS, covering infrastructure provisioning,
-      automation, observability, validation and operational recovery.
-    </p>
-
-    <div class="meta">
-      <span>Cloud Infrastructure</span>
-      <span>AWS</span>
-      <span>Terraform</span>
-      <span>Migration Engineering</span>
-      <span>Simulation</span>
-    </div>
-
-    <div class="actions">
-      <a class="btn" href="https://github.com/Rebs707/vcp-to-aws-migration-simulation" target="_blank" rel="noopener">View GitHub Repository ↗</a>
-      <a class="btn secondary" href="../../index.html#engineering">Back to Engineering Portfolio</a>
-    </div>
-  </section>
-
-  <div class="layout">
-
-    <aside class="sidebar">
-      <strong>CASE STUDY CONTENTS</strong>
-      <a href="#overview">01. Overview</a>
-      <a href="#problem">02. Problem Definition</a>
-      <a href="#architecture">03. Architecture</a>
-      <a href="#stack">04. Technology Stack</a>
-      <a href="#implementation">05. Implementation</a>
-      <a href="#decisions">06. Engineering Decisions</a>
-      <a href="#failures">07. Failure Scenarios</a>
-      <a href="#testing">08. Testing & Validation</a>
-      <a href="#results">09. Results & Learnings</a>
-      <a href="#documentation">10. Source & Documentation</a>
-    </aside>
-
-    <div class="content">
-
-      <section id="overview">
-        <h2>01. Project Overview</h2>
-
-        <p>
-          Describe the project, its objectives, the migration scope
-          and the engineering capabilities demonstrated.
-        </p>
-
-        <div class="panel">
-          <h3>Project Objectives</h3>
-          <ul>
-            <li>Define the target AWS infrastructure environment.</li>
-            <li>Automate infrastructure provisioning using Terraform.</li>
-            <li>Implement migration validation and operational checks.</li>
-            <li>Establish monitoring and operational visibility.</li>
-            <li>Document recovery procedures and operational runbooks.</li>
-          </ul>
-        </div>
-
-        <p>
-          <strong>Project status:</strong> Replace this with the
-          accurate implementation status and scope.
-        </p>
-      </section>
-
-      <section id="problem">
-        <h2>02. Problem Definition</h2>
-
-        <p>
-          Explain the infrastructure or operational problem being
-          addressed by this migration simulation.
-        </p>
-
-        <div class="grid">
-          <div class="card">
-            <h3>Source Environment</h3>
-            <p>[Describe the simulated source platform and its constraints.]</p>
-          </div>
-
-          <div class="card">
-            <h3>Target Environment</h3>
-            <p>[Describe the intended AWS environment and target capabilities.]</p>
-          </div>
-
-          <div class="card">
-            <h3>Migration Challenges</h3>
-            <p>[Document dependencies, configuration, connectivity and validation challenges.]</p>
-          </div>
-
-          <div class="card">
-            <h3>Success Criteria</h3>
-            <p>[Define the measurable conditions used to validate the simulation.]</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="architecture">
-        <h2>03. Architecture & System Design</h2>
-
-        <p>
-          Describe the actual architecture implemented in the repository.
-          Replace the illustrative flow below with a verified architecture.
-        </p>
-
-        <div class="architecture">
-          <div class="node">Source VCP Environment</div>
-          <div class="arrow">↓</div>
-          <div class="node">Migration Automation</div>
-          <div class="arrow">↓</div>
-          <div class="node">AWS Infrastructure</div>
-          <div class="arrow">↓</div>
-          <div class="node">Monitoring & Validation</div>
-          <div class="arrow">↓</div>
-          <div class="node">Operational Runbooks</div>
-        </div>
-
-        <div class="note">
-          Architecture illustration only. Confirm every component,
-          integration and data flow against the actual implementation
-          before treating this as the final architecture.
-        </div>
-
-        <h3>Architecture Components</h3>
-        <ul>
-          <li>[Component 1 — responsibility and interaction]</li>
-          <li>[Component 2 — responsibility and interaction]</li>
-          <li>[Component 3 — responsibility and interaction]</li>
-          <li>[Monitoring and operational components]</li>
-        </ul>
-      </section>
-
-      <section id="stack">
-        <h2>04. Technology Stack</h2>
-
-        <p>
-          List the technologies actually used in the project.
-          Remove tools that are not implemented.
-        </p>
-
-        <div class="tags">
-          <span class="tag">AWS</span>
-          <span class="tag">Terraform</span>
-          <span class="tag">Linux</span>
-          <span class="tag">Shell Scripting</span>
-          <span class="tag">CloudWatch</span>
-          <span class="tag">Monitoring</span>
-          <span class="tag">Git</span>
-        </div>
-
-        <div class="panel">
-          <h3>Technology Responsibilities</h3>
-          <p>[Explain why each major technology was selected and what it does.]</p>
-        </div>
-      </section>
-
-      <section id="implementation">
-        <h2>05. Implementation Walkthrough</h2>
-
-        <p>
-          Document the actual engineering workflow, from initial
-          infrastructure setup to migration validation.
-        </p>
-
-        <div class="panel">
-          <h3>Phase 1 — Infrastructure Provisioning</h3>
-          <p>[Terraform modules, resources, configuration and provisioning steps.]</p>
-        </div>
-
-        <div class="panel">
-          <h3>Phase 2 — Migration Automation</h3>
-          <p>[Scripts, automation workflows and migration execution steps.]</p>
-        </div>
-
-        <div class="panel">
-          <h3>Phase 3 — Monitoring & Observability</h3>
-          <p>[Monitoring configuration, metrics, alarms and operational visibility.]</p>
-        </div>
-
-        <div class="panel">
-          <h3>Phase 4 — Operational Readiness</h3>
-          <p>[Validation, incident simulation, runbooks and recovery procedures.]</p>
-        </div>
-      </section>
-
-      <section id="decisions">
-        <h2>06. Engineering Decisions & Trade-offs</h2>
-
-        <p>
-          Explain the important implementation choices and the
-          trade-offs involved.
-        </p>
-
-        <div class="grid">
-          <div class="card">
-            <h3>Decision 01</h3>
-            <p><strong>Choice:</strong> [Document the decision.]</p>
-            <p><strong>Reason:</strong> [Explain the rationale.]</p>
-          </div>
-
-          <div class="card">
-            <h3>Decision 02</h3>
-            <p><strong>Choice:</strong> [Document the decision.]</p>
-            <p><strong>Reason:</strong> [Explain the rationale.]</p>
-          </div>
-        </div>
-
-        <div class="note">
-          Include alternatives considered, limitations and the
-          consequences of each decision.
-        </div>
-      </section>
-
-      <section id="failures">
-        <h2>07. Failure Scenarios & Fixes</h2>
-
-        <p>
-          Document failures that were actually encountered or
-          deliberately simulated, along with the troubleshooting process.
-        </p>
-
-        <div class="panel">
-          <h3>Failure Scenario 01 — [Scenario name]</h3>
-          <p><strong>Symptom:</strong> [What happened?]</p>
-          <p><strong>Investigation:</strong> [How was the cause identified?]</p>
-          <p><strong>Resolution:</strong> [What corrective action was taken?]</p>
-          <p><strong>Prevention:</strong> [What control prevents recurrence?]</p>
-        </div>
-
-        <div class="panel">
-          <h3>Failure Scenario 02 — [Scenario name]</h3>
-          <p><strong>Symptom:</strong> [What happened?]</p>
-          <p><strong>Investigation:</strong> [How was the cause identified?]</p>
-          <p><strong>Resolution:</strong> [What corrective action was taken?]</p>
-          <p><strong>Prevention:</strong> [What control prevents recurrence?]</p>
-        </div>
-      </section>
-
-      <section id="testing">
-        <h2>08. Testing & Validation</h2>
-
-        <p>
-          Describe the tests performed and the evidence collected.
-          Distinguish planned tests from executed tests.
-        </p>
-
-        <div class="grid">
-          <div class="card">
-            <h3>Infrastructure Validation</h3>
-            <p>[Terraform validation, resource checks and configuration tests.]</p>
-          </div>
-
-          <div class="card">
-            <h3>Automation Validation</h3>
-            <p>[Script execution, workflow checks and error handling.]</p>
-          </div>
-
-          <div class="card">
-            <h3>Monitoring Validation</h3>
-            <p>[Metric collection, alarm behaviour and monitoring checks.]</p>
-          </div>
-
-          <div class="card">
-            <h3>Recovery Validation</h3>
-            <p>[Incident scenarios, recovery steps and observed outcomes.]</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="results">
-        <h2>09. Results & Engineering Learnings</h2>
-
-        <p>
-          Summarise the outcomes supported by implementation evidence.
-          Do not add unmeasured performance or availability claims.
-        </p>
-
-        <h3>Engineering Outcomes</h3>
-        <ul>
-          <li>[Verified infrastructure outcome]</li>
-          <li>[Verified automation outcome]</li>
-          <li>[Verified monitoring or validation outcome]</li>
-        </ul>
-
-        <h3>Key Learnings</h3>
-        <ul>
-          <li>[Infrastructure design learning]</li>
-          <li>[Automation and operational learning]</li>
-          <li>[Reliability and troubleshooting learning]</li>
-        </ul>
-
-        <div class="note">
-          Clearly identify the work as a simulation where applicable.
-          Do not present simulated outcomes as production migration results.
-        </div>
-      </section>
-
-      <section id="documentation">
-        <h2>10. Source Code & Documentation</h2>
-
-        <p>
-          Explore the implementation, supporting architecture,
-          automation scripts and operational documentation.
-        </p>
-
-        <div class="panel">
-          <h3>Project Repository</h3>
-          <p>
-            <a href="https://github.com/Rebs707/vcp-to-aws-migration-simulation"
-               target="_blank" rel="noopener"
-               style="color:var(--cyan)">
-              View source code and project documentation ↗
-            </a>
-          </p>
-        </div>
-
-        <h3>Supporting Documentation</h3>
-        <ul>
-          <li>[Architecture documentation link]</li>
-          <li>[Terraform implementation notes]</li>
-          <li>[Operational runbooks]</li>
-          <li>[Troubleshooting documentation]</li>
-        </ul>
-      </section>
-
-    </div>
-  </div>
+<section class="hero">
+<div class="eyebrow">Engineering Case Study / Cloud Infrastructure</div>
+<h1>Enterprise VCP to AWS Migration Simulation</h1>
+<p class="hero-description">An infrastructure and operations simulation of a Versa Controller Platform migration to AWS. The project combines Terraform-provisioned networking and compute, scripted migration and branch-onboarding workflows, validation state, CloudWatch alarms, incident classification and operator runbooks.</p>
+<div class="meta"><span>AWS</span><span>Terraform</span><span>Bash Automation</span><span>Cloud Operations</span><span>Migration Simulation</span></div>
+<div class="actions"><a class="btn" href="https://github.com/Rebs707/vcp-to-aws-migration-simulation" target="_blank" rel="noopener">View GitHub Repository ↗</a><a class="btn secondary" href="../../index.html#engineering">Back to Engineering Portfolio</a></div>
+</section>
+<div class="layout">
+<aside class="sidebar"><strong>CASE STUDY CONTENTS</strong>
+<a href="#overview">01. Overview</a><a href="#problem">02. Problem Definition</a><a href="#architecture">03. Architecture</a><a href="#stack">04. Technology Stack</a><a href="#implementation">05. Implementation</a><a href="#decisions">06. Engineering Decisions</a><a href="#failures">07. Failure Scenarios</a><a href="#testing">08. Testing & Validation</a><a href="#results">09. Results & Learnings</a><a href="#documentation">10. Source & Documentation</a></aside>
+<div class="content">
+<section id="overview">
+<h2>01. Project Overview</h2>
+<p>This project models the operational work involved in moving a centrally managed SD-WAN controller environment from an on-premises Versa Controller Platform (VCP) context to an AWS-hosted target environment. It establishes a simulated legacy baseline, provisions a representative AWS network and controller endpoint, and documents the migration lifecycle from readiness checks through incident handling and rollback planning.</p>
+<p>The implementation is intentionally a <strong>simulation</strong>. The EC2 instance is a representative controller endpoint running Nginx and serving a static health page; it is not the Versa controller software. The migration and branch workflows model process stages and state transitions rather than transferring live controller configuration or establishing real branch tunnels.</p>
+<div class="panel"><h3>Project objectives</h3><ul>
+<li>Define a representative AWS target network using Terraform.</li><li>Provision public and private subnets, routing, security groups, an EC2 simulation endpoint and an Application Load Balancer.</li><li>Model pre-migration validation, migration execution and branch onboarding as scripted workflows.</li><li>Record workflow state and timestamped logs for operational traceability.</li><li>Configure CloudWatch alarms and document post-migration checks.</li><li>Exercise incident classifications and document recovery and rollback procedures.</li>
+</ul></div>
+<p><span class="status">Simulation scope</span> Infrastructure is described from the Terraform configuration; workflow behaviour is described from the Bash scripts and runbooks. No claim is made here that a live VCP platform or production branch network was migrated.</p>
+</section>
+<section id="problem">
+<h2>02. Problem Definition</h2>
+<p>A controller migration is not only a compute relocation. It involves understanding the existing management-plane context, preparing network and access dependencies, coordinating migration and branch onboarding, validating service health, and defining how operators respond when expected conditions are not met.</p>
+<div class="grid">
+<div class="card"><h3>Source context</h3><p>The documented legacy model includes a centrally managed, on-premises multi-tenant VCP, branch offices, corporate WAN connectivity, TACACS administrator authentication and existing routing policies.</p></div>
+<div class="card"><h3>Target representation</h3><p>The Terraform configuration provisions an AWS VPC with public/private subnet tiers, internet and NAT routing, security groups, a private EC2 simulation controller and a public-facing ALB.</p></div>
+<div class="card"><h3>Operational challenge</h3><p>Migration readiness, controller availability, branch onboarding, connectivity validation and recovery decisions need explicit stages, state records and operator procedures.</p></div>
+<div class="card"><h3>Simulation success criteria</h3><p>Workflow state files and validation counters represent process outcomes. Infrastructure configuration and alarm definitions provide a target environment model; they do not by themselves prove a successful live migration.</p></div>
+</div>
+</section>
+<section id="architecture">
+<h2>03. Architecture & System Design</h2>
+<p>The target infrastructure is provisioned in the default AWS region <code>ap-south-1</code> (Mumbai). Terraform dynamically selects two available Availability Zones for the subnet pairs. The diagram below reflects the resources present in <code>terraform/main.tf</code>.</p>
+<div class="architecture" role="img" aria-label="AWS architecture showing internet-facing application load balancer in public subnets, internet gateway and NAT gateway, private EC2 controller, and CloudWatch alarms">
+<div class="arch-row"><div class="arch-node">External clients<small>HTTP entry to ALB</small></div></div>
+<div class="arch-arrow">↓</div>
+<div class="arch-row"><div class="arch-node">Application Load Balancer<small>Internet-facing · public subnets · HTTP listener :80</small></div></div>
+<div class="arch-arrow">↓ HTTP :80</div>
+<div class="arch-row"><div class="arch-node">Target group<small>Instance target · health check /</small></div><div class="arch-node">Internet Gateway<small>Public subnet route</small></div></div>
+<div class="arch-arrow">↓</div>
+<div class="arch-row"><div class="arch-node">Private EC2 controller simulation<small>t3.micro · Nginx static health page · no public IP</small></div><div class="arch-node">NAT Gateway<small>One NAT in first public subnet</small></div></div>
+<div class="arch-arrow">↕</div>
+<div class="arch-row"><div class="arch-node">Private subnet tier<small>Two subnets across selected AZs</small></div><div class="arch-node">CloudWatch alarms<small>EC2 CPU, EC2 status check, ALB unhealthy hosts</small></div></div>
+</div>
+<div class="note warning">The ALB security group allows inbound TCP 80 and 443, but the inspected configuration defines only an HTTP listener on port 80. No HTTPS listener or certificate is configured in this Terraform file. The controller security group allows TCP 80 only from the ALB security group.</div>
+<h3>Network and compute components</h3>
+<ul>
+<li><strong>VPC:</strong> <code>10.0.0.0/16</code>, with DNS support and DNS hostnames enabled.</li>
+<li><strong>Public subnets:</strong> <code>10.0.1.0/24</code> and <code>10.0.2.0/24</code>, with public IP assignment enabled and a default route through the Internet Gateway.</li>
+<li><strong>Private subnets:</strong> <code>10.0.11.0/24</code> and <code>10.0.12.0/24</code>, associated with a private route table whose default route uses the NAT Gateway.</li>
+<li><strong>NAT:</strong> One Elastic IP and one NAT Gateway in the first public subnet.</li>
+<li><strong>Controller:</strong> One <code>t3.micro</code> EC2 instance in the first private subnet, with no public IP, an instance profile for Systems Manager core access, IMDSv2 required and an encrypted 8 GB gp3 root volume.</li>
+<li><strong>Load balancing:</strong> An internet-facing Application Load Balancer spans both public subnets and forwards HTTP traffic to an instance target group on port 80.</li>
+<li><strong>Monitoring:</strong> CloudWatch alarms cover EC2 CPU utilization above 80%, EC2 status-check failure and ALB unhealthy-host count.</li>
+</ul>
+<h3>Management-plane simulation boundary</h3>
+<p>The EC2 user-data installs and starts Nginx and writes a simple page containing “VCP AWS Controller Simulation” and “Controller status: healthy”. This provides a representative HTTP endpoint for the target group; it does not run Versa controller services or reproduce real VCP APIs, configuration transfer, TACACS integration or SD-WAN control tunnels.</p>
+</section>
+<section id="stack">
+<h2>04. Technology Stack</h2>
+<div class="tags"><span class="tag">AWS VPC</span><span class="tag">Amazon EC2</span><span class="tag">Application Load Balancer</span><span class="tag">NAT Gateway</span><span class="tag">Amazon CloudWatch</span><span class="tag">IAM</span><span class="tag">AWS Systems Manager</span><span class="tag">Terraform 1.6+</span><span class="tag">AWS Provider 6.x</span><span class="tag">Bash</span><span class="tag">Git & GitHub</span></div>
+<div class="panel"><h3>Technology responsibilities</h3><ul>
+<li><strong>Terraform:</strong> declares the AWS network, routing, security, compute, load-balancing, IAM and alarm resources as infrastructure as code.</li>
+<li><strong>Bash:</strong> coordinates simulated migration, branch onboarding, validation and incident-classification workflows, with log and state-file output.</li>
+<li><strong>Amazon CloudWatch:</strong> receives alarm definitions for selected EC2 and ALB metrics.</li>
+<li><strong>IAM and Systems Manager:</strong> provide an EC2 role and instance profile with <code>AmazonSSMManagedInstanceCore</code>.</li>
+<li><strong>Git:</strong> versions infrastructure, scripts and operational documentation.</li>
+</ul></div>
+</section>
+<section id="implementation">
+<h2>05. Implementation Walkthrough</h2>
+<div class="panel"><h3>Phase 1 — Infrastructure provisioning</h3><p>Terraform defines the VPC, two public and two private subnets, Internet Gateway, public and private route tables, one NAT Gateway, security groups, IAM role/profile, EC2 simulation controller, ALB, target group, listener and three CloudWatch alarms. The Amazon Linux 2023 AMI is resolved through the public SSM parameter for the latest x86_64 kernel-default image.</p></div>
+<div class="panel"><h3>Phase 2 — Pre-migration readiness</h3><p><code>pre_migration_validation.sh</code> checks for Terraform, Git and Python 3; checks AWS CLI and caller identity when the CLI is present; verifies required Terraform and architecture files; runs <code>terraform fmt -check</code> and <code>terraform validate</code>; and warns if the Git working tree has changes. It reports PASS/WARN/FAIL counts and exits non-zero when failures are recorded. Missing or invalid AWS credentials are a warning in the script, not a blocking failure.</p></div>
+<div class="panel"><h3>Phase 3 — Migration workflow simulation</h3><p><code>migrate_controller.sh</code> models five sequential stages: prerequisite validation, AWS controller configuration preparation, simulated configuration transfer, simulated reachability validation and readiness for branch onboarding. It generates a migration ID, UTC timestamped log and state file under <code>logs/migrations/</code> and <code>state/migrations/</code>. A <code>FAIL_AT_STEP</code> variable supports injected failure scenarios.</p></div>
+<div class="panel"><h3>Phase 4 — Branch onboarding simulation</h3><p><code>onboard_branch.sh</code> checks for a successful migration state, then models branch registration, controller reachability, control-tunnel establishment, routing validation and operational confirmation. <code>BRANCH_ID</code>, <code>CONTROLLER_URL</code> and <code>FAIL_AT_STEP</code> parameterise the workflow. Branch-specific state and logs are written under <code>state/onboarding/</code> and <code>logs/onboarding/</code>.</p></div>
+<div class="panel"><h3>Phase 5 — Post-migration validation</h3><p><code>post_migration_validation.sh</code> evaluates migration state and branch onboarding state, then records simulated ALB health, controller reachability and branch connectivity checks. It counts PASS/WARN/FAIL results and writes a timestamped validation log and state record. A connectivity degradation is represented as a warning; configured failure injections for other checks produce failed validation.</p></div>
+<div class="panel"><h3>Phase 6 — Incident and recovery workflows</h3><p><code>simulate_incident.sh</code> classifies five scenarios and records severity, impact, recommended action and outcome in incident state files: controller unreachable, branch onboarding failure, ALB unhealthy, partial connectivity and rollback required. The runbooks describe operator actions for controller-unreachable handling and restoration of the previous VCP configuration after a service-impacting change.</p></div>
+</section>
+<section id="decisions">
+<h2>06. Engineering Decisions & Trade-offs</h2>
+<div class="grid">
+<div class="card"><h3>Private controller placement</h3><p><strong>Choice:</strong> Place the EC2 simulation controller in a private subnet without a public IP. <strong>Trade-off:</strong> Inbound application traffic is mediated by the ALB; outbound private-subnet access depends on NAT.</p></div>
+<div class="card"><h3>Single NAT Gateway</h3><p><strong>Choice:</strong> Use one NAT Gateway in the first public subnet for both private subnet routes. <strong>Trade-off:</strong> This is simpler and less costly for a simulation, but creates an AZ and availability dependency and may introduce cross-AZ data transfer.</p></div>
+<div class="card"><h3>One controller instance</h3><p><strong>Choice:</strong> Use one <code>t3.micro</code> controller simulation instance. <strong>Trade-off:</strong> The ALB spans two public subnets, but the single target does not provide controller-level high availability.</p></div>
+<div class="card"><h3>HTTP-only listener</h3><p><strong>Choice:</strong> Configure an HTTP listener on port 80 and an HTTP target group. <strong>Trade-off:</strong> This keeps the simulation straightforward; TLS termination and certificate management are not implemented in the inspected configuration.</p></div>
+<div class="card"><h3>File-based workflow state</h3><p><strong>Choice:</strong> Store migration, onboarding, validation and incident outcomes in readable state files with timestamped logs. <strong>Trade-off:</strong> This supports a lightweight local simulation, but does not provide distributed locking, durable central state or concurrent workflow coordination.</p></div>
+<div class="card"><h3>Simulated workflow stages</h3><p><strong>Choice:</strong> Model process stages without invoking live VCP or branch APIs. <strong>Trade-off:</strong> This makes lifecycle and failure-path logic demonstrable while keeping the boundary between workflow modelling and real migration explicit.</p></div>
+</div>
+</section>
+<section id="failures">
+<h2>07. Failure Scenarios & Operational Response</h2>
+<p>The incident script records a classification and recommended response. The accompanying runbooks describe operator procedures. These are simulated decision paths; the script does not perform the remediation actions itself.</p>
+<div class="grid">
+<div class="card"><h3>Controller unreachable</h3><p><strong>Classification:</strong> HIGH · <code>RESCHEDULE</code>. Request console access from the field engineer, keep the VCP platform unchanged and resume onboarding after access is restored. The runbook explicitly states rollback is not required for this case.</p></div>
+<div class="card"><h3>Branch onboarding failure</h3><p><strong>Classification:</strong> MEDIUM · <code>FAILED</code>. The simulated impact is a single unavailable branch; the recorded action is to investigate onboarding.</p></div>
+<div class="card"><h3>ALB target unhealthy</h3><p><strong>Classification:</strong> HIGH · <code>FAILED</code>. The recorded action is to validate target health; the simulation marks controller service availability as unconfirmed.</p></div>
+<div class="card"><h3>Partial connectivity</h3><p><strong>Classification:</strong> MEDIUM · <code>PARTIAL</code>. Investigate routing and assess impact before making a rollback decision.</p></div>
+<div class="card"><h3>Rollback required</h3><p><strong>Classification:</strong> CRITICAL · <code>ROLLBACK</code>. Stop further onboarding, restore the previous VCP configuration, validate recovery, record the outcome and prepare the required issue report.</p></div>
+</div>
+<div class="note warning">The rollback runbook documents restoration steps but the incident script only writes an outcome of ROLLBACK and an action label. No automated VCP configuration restoration is implemented in that script.</div>
+</section>
+<section id="testing">
+<h2>08. Testing & Validation</h2>
+<p>The repository contains validation logic and failure-injection controls. The code establishes what the scripts are designed to check; it is not, by itself, evidence that each check was executed successfully in a deployed AWS environment.</p>
+<div class="grid">
+<div class="card"><h3>Local readiness checks</h3><p>The pre-migration script checks tool availability, AWS caller identity when possible, required files, Terraform formatting and Terraform configuration validation, plus Git working-tree status.</p></div>
+<div class="card"><h3>Workflow state checks</h3><p>Migration and branch onboarding write state files. Post-migration validation reads those files and records pass, warning and failure totals.</p></div>
+<div class="card"><h3>Failure injection</h3><p><code>FAIL_AT_STEP</code> is present in migration and onboarding scripts. <code>FAIL_CHECK</code> in post-migration validation can inject migration, branch, ALB, controller or connectivity outcomes.</p></div>
+<div class="card"><h3>Infrastructure monitoring definitions</h3><p>Terraform declares alarms for EC2 CPU above 80%, EC2 status-check failure and ALB unhealthy-host count. Alarm definitions are not evidence of observed alarm firing.</p></div>
+</div>
+<h3>Implementation review notes</h3>
+<ul>
+<li>The migration and onboarding scripts use <code>set -uo pipefail</code>, but not <code>set -e</code>. Their <code>ERR</code> traps alone do not guarantee that a failing function call in the straight-line workflow stops subsequent steps. Explicit error handling or <code>set -e</code> with carefully tested control flow would make failure propagation more reliable.</li>
+<li>The scripts select the “latest” migration state using a filename sort and <code>tail -1</code>. Lexicographic ordering of timestamped IDs is not a robust substitute for explicitly comparing modification times or parsed timestamps.</li>
+<li>The post-migration script labels ALB health, controller reachability and branch connectivity as simulated checks; they do not call AWS APIs or probe a network endpoint.</li>
+<li>The pre-migration script treats unavailable or invalid AWS credentials as a warning. The runbook's success criteria separately require AWS access to be confirmed before real deployment.</li>
+</ul>
+<div class="note">No deployment screenshots, Terraform apply output, actual AWS resource inventory, script execution logs or measured test results were available in the reviewed material. Those results are therefore not asserted in this case study.</div>
+</section>
+<section id="results">
+<h2>09. Results & Engineering Learnings</h2>
+<h3>What the repository demonstrates</h3>
+<ul>
+<li>A Terraform-defined AWS network and application entry path with public/private subnet separation, routing, security controls, a private EC2 endpoint, ALB and CloudWatch alarm definitions.</li>
+<li>A staged migration and branch-onboarding workflow model with parameterised identifiers, local state files and timestamped logs.</li>
+<li>A post-migration validation model that aggregates pass, warning and failure outcomes.</li>
+<li>A five-scenario incident classification model and operator runbooks for readiness, migration, onboarding, validation, controller-unreachable response and rollback.</li>
+</ul>
+<h3>Engineering learnings</h3>
+<ul>
+<li>Migration planning needs explicit separation between infrastructure readiness, workflow execution, service validation and operational recovery.</li>
+<li>Private subnet placement, load-balancer health checks and security-group references are useful building blocks, but high availability depends on the number and placement of actual targets and network dependencies.</li>
+<li>State and logs improve traceability, while reliable orchestration also requires correct failure propagation, robust state selection and safe handling of concurrent runs.</li>
+<li>Operational runbooks should distinguish between rescheduling, investigation and rollback; not every connectivity issue requires reverting the migration.</li>
+<li>Simulation boundaries should be explicit so that modeled outcomes are not mistaken for production integrations or live service validation.</li>
+</ul>
+</section>
+<section id="documentation">
+<h2>10. Source Code & Documentation</h2>
+<p>The repository contains the Terraform configuration, workflow scripts, operational runbooks and legacy architecture baseline used for this case study.</p>
+<div class="panel"><h3>Project repository</h3><p><a href="https://github.com/Rebs707/vcp-to-aws-migration-simulation" target="_blank" rel="noopener" style="color:var(--cyan)">Explore source code and project documentation ↗</a></p></div>
+<h3>Key repository paths</h3>
+<ul><li><code>terraform/</code> — provider, version, variable, output and infrastructure resource definitions.</li><li><code>scripts/</code> — pre-migration validation, migration, branch onboarding, post-migration validation and incident simulation.</li><li><code>runbooks/</code> — six operator procedures covering readiness through rollback.</li><li><code>architecture/legacy/</code> — documented baseline for the simulated legacy SD-WAN environment.</li><li><code>README.md</code> — project objectives, architecture inventory, workflow and technology summary.</li></ul>
+<div class="note">The target architecture README path referenced during review was not retrievable, so this page uses the Terraform resources as the source of truth for the AWS target design.</div>
+</section>
+</div></div>
 </main>
-
-<footer>
-  <div class="container">
-    <span>© 2026 Rabeka Alexander. Cloud Infrastructure & Platform Engineering.</span>
-    <a href="../../index.html" style="color:var(--cyan)">Return to main website ↑</a>
-  </div>
-</footer>
-
+<footer><div class="container"><span>© 2026 Rabeka Alexander. Cloud Infrastructure & Platform Engineering.</span><a href="../../index.html" style="color:var(--cyan)">Return to main website ↑</a></div></footer>
 </body>
 </html>
