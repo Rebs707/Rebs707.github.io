@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080e1b">
+<meta name="description" content="Enterprise Knowledge Platform case study — local-first UTF-8 document ingestion, overlapping text chunking, SQLite persistence and deterministic keyword retrieval with FastAPI.">
+<title>Enterprise Knowledge Platform | Rabeka Alexander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080e1b;--surface:#0e1728;--surface2:#121f34;--border:rgba(135,166,210,.16);--text:#edf4ff;--muted:#9aabc3;--blue:#58a6ff;--cyan:#65d9e8;--green:#8bd5a8;--amber:#f1c879;--max:1160px}
+*{margin:0;padding:0;box-sizing:border-box;scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 80% 0%,rgba(34,92,170,.16),transparent 35%),radial-gradient(ellipse at 0% 45%,rgba(25,111,145,.08),transparent 32%),var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;line-height:1.7}
+a{color:inherit;text-decoration:none}.container{width:min(var(--max),calc(100% - 48px));margin:auto}
+header{border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;background:rgba(8,14,27,.94);backdrop-filter:blur(14px)}
+.nav{min-height:70px;display:flex;justify-content:space-between;align-items:center;gap:20px}.logo{font-family:"Space Grotesk",sans-serif;font-size:19px;font-weight:700;letter-spacing:-.5px}.logo span{color:var(--blue)}
+.nav-links{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:var(--muted)}.nav-links a:hover,.back-link:hover{color:var(--cyan)}
+.hero{padding:82px 0 48px}.eyebrow{color:var(--cyan);text-transform:uppercase;letter-spacing:2px;font-size:11px;font-weight:700;margin-bottom:18px}
+h1,h2,h3{font-family:"Space Grotesk",sans-serif;line-height:1.25}h1{font-size:clamp(36px,6vw,58px);letter-spacing:-2px;max-width:950px;margin-bottom:20px}
+.hero-description{color:var(--muted);max-width:900px;font-size:16px}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.meta span,.tag{border:1px solid var(--border);background:var(--surface);border-radius:30px;padding:6px 12px;font-size:11px;color:var(--muted)}
+.actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-block;padding:11px 17px;border-radius:7px;background:var(--blue);color:#07101e;font-size:13px;font-weight:700}.btn.secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:45px;padding:30px 0 90px}.sidebar{position:sticky;top:100px;align-self:start;border-left:1px solid var(--border);padding-left:18px}
+.sidebar strong{display:block;font-size:12px;margin-bottom:15px}.sidebar a{display:block;font-size:12px;color:var(--muted);padding:7px 0}.sidebar a:hover{color:var(--cyan)}
+.content section{padding:0 0 42px;margin-bottom:34px;border-bottom:1px solid var(--border);scroll-margin-top:100px}.content h2{font-size:25px;margin-bottom:18px}.content h3{font-size:16px;margin:23px 0 10px}.content p{color:var(--muted);font-size:14px;margin-bottom:14px}
+.content ul,.content ol{color:var(--muted);padding-left:22px;font-size:14px}.content li{margin:7px 0}
+.panel{background:linear-gradient(145deg,var(--surface),rgba(18,31,52,.75));border:1px solid var(--border);border-radius:12px;padding:21px;margin:17px 0}.panel h3{margin-top:0;color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:17px}.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px}.card h3{margin:0 0 8px;font-size:15px}.card p{margin:0;font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.architecture{border:1px solid rgba(101,217,232,.25);border-radius:12px;background:rgba(20,50,75,.16);padding:22px;margin:20px 0}
+.arch-row{display:flex;justify-content:center;align-items:stretch;gap:9px;flex-wrap:wrap}.arch-node{flex:1 1 145px;max-width:230px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 10px;text-align:center;font-size:12px;color:var(--cyan)}
+.arch-node small{display:block;color:var(--muted);font-size:10px;margin-top:5px}.arch-arrow{text-align:center;color:var(--blue);font-size:20px;padding:5px}
+.note{border-left:3px solid var(--blue);padding:13px 17px;background:rgba(88,166,255,.07);margin:17px 0;color:var(--muted);font-size:13px}
+.status{display:inline-block;border:1px solid rgba(139,213,168,.28);color:var(--green);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}
+.warning{border-left-color:var(--amber);background:rgba(241,200,121,.06)}
+code{font-family:Consolas,monospace;color:#b9dcff;background:rgba(88,166,255,.08);padding:2px 5px;border-radius:4px;font-size:.92em}
+footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);font-size:12px}footer .container{display:flex;justify-content:space-between;flex-wrap:wrap;gap:15px}
+@media(max-width:800px){.layout{grid-template-columns:1fr;gap:28px}.sidebar{position:static;display:flex;flex-wrap:wrap;gap:9px 16px;border-left:0;border-bottom:1px solid var(--border);padding:0 0 17px}.sidebar strong{width:100%}.sidebar a{padding:0}}
+@media(max-width:540px){.container{width:min(100% - 30px,var(--max))}.hero{padding:52px 0 32px}.nav{padding:12px 0;align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.grid{grid-template-columns:1fr}.content h2{font-size:22px}.architecture{padding:14px 9px}}
+</style>
+</head>
+<body>
+<header><div class="container nav">
+<a class="logo" href="../../index.html">RABEKA ALEXANDER<span>.</span></a>
+<nav class="nav-links" aria-label="Main navigation">
+<a href="../../index.html">Home</a><a href="../../index.html#engineering">Engineering</a><a href="../../index.html#research">Research</a><a href="../../index.html#writing">Writing</a><a href="../../index.html#contact">Contact</a>
+</nav></div></header>
+<main class="container">
+<section class="hero">
+<div class="eyebrow">Engineering Case Study / Enterprise Intelligence & Platform Engineering</div>
+<h1>Enterprise Knowledge Platform: <span style="color:var(--blue)">Local-First Document Ingestion & Retrieval</span></h1>
+<p class="hero-description">A FastAPI-based document platform that accepts bounded UTF-8 text and Markdown uploads, extracts and chunks content, persists document metadata and chunks in SQLite, and retrieves matching excerpts through deterministic keyword scoring.</p>
+<div class="meta"><span>Python</span><span>FastAPI</span><span>SQLite</span><span>Document Processing</span><span>Keyword Retrieval</span><span>pytest</span><span>Docker Configuration</span></div>
+<div class="actions"><a class="btn" href="https://github.com/Rebs707/enterprise-knowledge-platform" target="_blank" rel="noopener noreferrer">View GitHub Repository ↗</a><a class="btn secondary" href="../../index.html#engineering">Back to Engineering Portfolio</a></div>
+</section>
+<div class="layout">
+<aside class="sidebar"><strong>CASE STUDY CONTENTS</strong>
+<a href="#overview">01. Overview</a><a href="#problem">02. Problem Definition</a><a href="#architecture">03. Architecture</a><a href="#components">04. Core Components</a><a href="#stack">05. Technology Stack</a><a href="#implementation">06. Implementation</a><a href="#decisions">07. Engineering Decisions</a><a href="#validation">08. Testing & Validation</a><a href="#boundaries">09. Scope & Limitations</a><a href="#learnings">10. Results & Learnings</a><a href="#source">11. Source & Documentation</a></aside>
+<div class="content">
+<section id="overview">
+<h2>01. Project Overview</h2>
+<p>Enterprise Knowledge Platform is a local-first document ingestion and keyword-retrieval prototype. It provides a small API surface for accepting supported text documents, converting them into overlapping chunks, storing their metadata and content in SQLite, and retrieving matching chunks with source-document references.</p>
+<p>The current release focuses on a complete, deterministic ingestion-to-retrieval path. It does not generate natural-language answers or claim semantic understanding of document meaning.</p>
+<div class="panel"><h3>Project objectives</h3><ul>
+<li>Define a bounded upload contract for UTF-8 plain-text and Markdown documents.</li>
+<li>Normalize text and split longer content into overlapping retrieval chunks.</li>
+<li>Persist document metadata, SHA-256 digests and chunks in a local SQLite database.</li>
+<li>Provide keyword-based retrieval with deterministic scoring and result ordering.</li>
+<li>Expose upload, metadata, search and health operations through FastAPI.</li>
+<li>Validate normal and invalid-input behaviour through automated tests and local API smoke checks.</li>
+</ul></div>
+<p><span class="status">Prototype · Local runtime verified</span> The application and its document workflow were exercised locally. Docker image and container runtime verification have not been performed for this release.</p>
+</section>
+<section id="problem">
+<h2>02. Problem Definition</h2>
+<p>Documents need a consistent path from ingestion to retrieval before more advanced knowledge capabilities can be added. Even a deliberately small first increment must handle file boundaries, text normalization, chunk creation, durable storage and traceable retrieval results.</p>
+<div class="grid">
+<div class="card"><h3>Controlled ingestion</h3><p>Uploads need explicit format, encoding and size boundaries so unsupported or malformed input is rejected predictably.</p></div>
+<div class="card"><h3>Retrieval-ready content</h3><p>Longer documents need to be split into manageable chunks while retaining overlap between adjacent segments.</p></div>
+<div class="card"><h3>Traceable storage</h3><p>Search results need to retain document identifiers and filenames so a matching excerpt can be traced to its source document.</p></div>
+<div class="card"><h3>Honest retrieval semantics</h3><p>A first retrieval baseline can be useful without embeddings or an LLM, provided lexical matching is clearly distinguished from semantic search.</p></div>
+</div>
+</section>
+<section id="architecture">
+<h2>03. Architecture & System Design</h2>
+<p>The implemented path is a synchronous API workflow. The upload endpoint validates the filename, extension, size and UTF-8 content, then delegates text preparation to the document agent. The resulting chunks and document metadata are persisted in SQLite. Search tokenizes the query, scores stored chunks and returns a bounded ranked result set.</p>
+<div class="architecture" role="img" aria-label="Enterprise Knowledge Platform flow from FastAPI upload through validation, extraction, chunking and SQLite persistence, then keyword query scoring and ranked results">
+<div class="arch-row"><div class="arch-node">Client<small>Multipart document upload or search query</small></div></div>
+<div class="arch-arrow">↓</div>
+<div class="arch-row"><div class="arch-node">FastAPI<small>POST /documents · GET /search</small></div><div class="arch-node">Request validation<small>Filename · type · UTF-8 · 2 MiB maximum</small></div></div>
+<div class="arch-arrow">↓ accepted document</div>
+<div class="arch-row"><div class="arch-node">DocumentAgent<small>Text extraction and preparation</small></div><div class="arch-node">Chunking<small>900-character default · 120-character overlap</small></div></div>
+<div class="arch-arrow">↓</div>
+<div class="arch-row"><div class="arch-node">SQLite KnowledgeStore<small>Document metadata · SHA-256 · chunks</small></div></div>
+<div class="arch-arrow">↑ query matching</div>
+<div class="arch-row"><div class="arch-node">SearchAgent<small>Unique query terms · occurrence scoring · deterministic ranking</small></div><div class="arch-node">API response<small>Ranked excerpts · filenames · document IDs</small></div></div>
+</div>
+<h3>API surface</h3>
+<ul>
+<li><code>GET /health</code> returns application health.</li>
+<li><code>POST /documents</code> accepts a multipart field named <code>file</code> and indexes supported <code>.txt</code> or <code>.md</code> content.</li>
+<li><code>GET /documents/{document_id}</code> returns stored document metadata and chunk count.</li>
+<li><code>GET /search?q={query}&limit=10</code> searches indexed chunks.</li>
+<li><code>GET /knowledge/{topic}</code> is a compatibility alias for keyword search.</li>
+<li>FastAPI provides interactive API documentation at <code>/docs</code>.</li>
+</ul>
+</section>
+<section id="components">
+<h2>04. Core Components</h2>
+<div class="panel"><h3>DocumentAgent — ingestion preparation</h3><p>Delegates supported-file validation, UTF-8 decoding and text normalization to the text-processing service, then creates overlapping chunks. The supported extensions are <code>.txt</code> and <code>.md</code>; UTF-8 BOM and CRLF line endings are normalized.</p></div>
+<div class="panel"><h3>Text processing — validation and chunking</h3><p>Rejects unsupported extensions, invalid UTF-8, empty content and null characters. The default chunk size is 900 characters with 120 characters of overlap. Chunk size and overlap are configurable at the function level, subject to the constraint that size is positive and overlap is smaller than size.</p></div>
+<div class="panel"><h3>KnowledgeStore — SQLite persistence</h3><p>Stores document identifiers, filenames, SHA-256 digests, upload timestamps, content types and chunk records. The default database path is <code>data/knowledge.db</code>, configurable through <code>EKP_DB_PATH</code>. Database writes group metadata and chunk inserts in a transaction.</p></div>
+<div class="panel"><h3>SearchAgent and KnowledgeWorkflow — retrieval coordination</h3><p>The SearchAgent calls the SQLite store and returns the query, result count and ranked results. KnowledgeWorkflow delegates its current retrieval operation to the same search agent. Knowledge-graph construction and recommendation agents are reserved placeholders and raise <code>NotImplementedError</code>.</p></div>
+</section>
+<section id="stack">
+<h2>05. Technology Stack</h2>
+<div class="tags"><span class="tag">Python 3.10</span><span class="tag">FastAPI</span><span class="tag">Uvicorn</span><span class="tag">SQLite</span><span class="tag">python-multipart</span><span class="tag">pytest</span><span class="tag">Dockerfile</span><span class="tag">Docker Compose configuration</span><span class="tag">Git & GitHub</span></div>
+<div class="panel"><h3>Technology responsibilities</h3><ul>
+<li><strong>FastAPI:</strong> exposes document upload, metadata retrieval, search and health endpoints.</li>
+<li><strong>Python text-processing modules:</strong> validate supported input, normalize text and generate overlapping chunks.</li>
+<li><strong>SQLite:</strong> stores document metadata and chunk content without an external database service.</li>
+<li><strong>pytest:</strong> validates text processing, persistence, keyword search and workflow behaviour.</li>
+<li><strong>Docker:</strong> a Dockerfile and Compose configuration are present; container runtime validation remains outstanding.</li>
+</ul></div>
+</section>
+<section id="implementation">
+<h2>06. Implementation Walkthrough</h2>
+<div class="panel"><h3>Phase 1 — Bounded document ingestion</h3><p>The upload endpoint reads at most 2 MiB plus one byte to detect oversized requests. It sanitizes the filename to its final path component, validates the extension and content, and returns explicit HTTP errors for unsupported formats, invalid text and size violations.</p></div>
+<div class="panel"><h3>Phase 2 — Text normalization and chunking</h3><p>UTF-8 text is decoded with BOM support, line endings are normalized and surrounding whitespace is removed. The chunker creates overlapping segments using a default 900-character window and 120-character overlap.</p></div>
+<div class="panel"><h3>Phase 3 — Transactional metadata and chunk storage</h3><p>The store generates a UUID document identifier, calculates a SHA-256 digest from the uploaded bytes, records an ISO-8601 UTC timestamp and persists metadata and chunk rows in SQLite. The API returns the document identifier and chunk count.</p></div>
+<div class="panel"><h3>Phase 4 — Deterministic keyword retrieval</h3><p>The query is lowercased and tokenized into unique alphanumeric terms of at least two characters. Each chunk receives a score equal to the total case-insensitive occurrence count of those terms. Results are ordered by descending score, then filename and chunk index, and limited to the requested range of 1–50.</p></div>
+</section>
+<section id="decisions">
+<h2>07. Engineering Decisions & Trade-offs</h2>
+<div class="grid">
+<div class="card"><h3>Local-first persistence</h3><p>SQLite keeps the first implementation self-contained and easy to run. It is not a distributed or multi-tenant storage design.</p></div>
+<div class="card"><h3>Lexical matching first</h3><p>Occurrence-based keyword scoring is transparent and deterministic. It does not capture synonyms, semantic similarity or contextual meaning.</p></div>
+<div class="card"><h3>Bounded upload surface</h3><p>Restricting file types, encoding and upload size keeps the ingestion contract explicit while richer parsers remain future work.</p></div>
+<div class="card"><h3>Source traceability</h3><p>Search responses include document IDs, filenames and chunk indexes to connect each result to its stored source.</p></div>
+<div class="card"><h3>Separate future agents</h3><p>Knowledge-graph and recommendation modules are retained as explicit extension points, but they do not report successful work before implementation exists.</p></div>
+<div class="card"><h3>Prototype boundary</h3><p>The current service has no authentication, per-user authorization, tenant isolation, LLM answer generation or external knowledge connectors.</p></div>
+</div>
+</section>
+<section id="validation">
+<h2>08. Testing & Validation</h2>
+<p>The application was tested in a local WSL Ubuntu environment using Python 3.10.12. Automated tests and manual API smoke checks are reported separately.</p>
+<div class="grid">
+<div class="card"><h3>Automated tests <span class="status">11 passed</span></h3><p>10 document-pipeline tests cover UTF-8 extraction, unsupported and invalid input, empty documents, chunking, document-agent preparation, SQLite persistence, metadata and keyword search. One workflow test checks retrieval coordination.</p></div>
+<div class="card"><h3>Python compilation <span class="status">Passed</span></h3><p><code>python -m compileall -q app tests</code> completed without compilation errors.</p></div>
+<div class="card"><h3>API health and upload <span class="status">200 / 201</span></h3><p>The local API health endpoint returned HTTP 200. A Markdown upload returned HTTP 201 and a document ID, SHA-256 digest, timestamp and one indexed chunk.</p></div>
+<div class="card"><h3>Metadata and retrieval <span class="status">Passed</span></h3><p>Document metadata retrieval returned HTTP 200. Searches for <code>CloudWatch</code> and <code>observability</code> each returned the expected indexed chunk.</p></div>
+<div class="card"><h3>Invalid-input handling <span class="status">415 / 400 / 413</span></h3><p>Unsupported PDF, invalid UTF-8 and a document larger than 2 MiB returned the expected HTTP 415, 400 and 413 responses. An unknown document ID returned HTTP 404.</p></div>
+<div class="card"><h3>Repository state <span class="status">Clean</span></h3><p>After testing, generated bytecode changes were restored. The local main branch was synchronized with origin/main and the working tree was clean before the later documentation-only GitHub updates.</p></div>
+</div>
+<div class="note warning">Docker image build, Docker Compose startup and container API runtime have not been verified. The presence of Docker configuration is not evidence of a successful container deployment.</div>
+</section>
+<section id="boundaries">
+<h2>09. Scope, Limitations & Security Boundaries</h2>
+<div class="panel"><h3>What the implementation does</h3><ul>
+<li>Accepts UTF-8 <code>.txt</code> and <code>.md</code> documents up to 2 MiB.</li>
+<li>Creates overlapping text chunks and stores them with document metadata in SQLite.</li>
+<li>Performs deterministic keyword occurrence scoring and returns ranked matching excerpts.</li>
+<li>Provides API access to document metadata and application health.</li>
+</ul></div>
+<div class="panel"><h3>What it does not currently do</h3><ul>
+<li>It does not parse PDF or DOCX files.</li>
+<li>It does not use embeddings, vector databases or semantic retrieval.</li>
+<li>It does not generate LLM answers or integrate Amazon Bedrock or S3.</li>
+<li>It does not construct a knowledge graph or implement recommendations.</li>
+<li>It does not provide authentication, per-user authorization, tenant isolation or production access controls.</li>
+<li>It does not provide a production deployment or verified container runtime.</li>
+</ul></div>
+<div class="note warning">This is a local-first engineering prototype, not a production enterprise knowledge service or a RAG system. The search score is a lexical occurrence count, not a confidence score or semantic relevance measure. Do not expose the unauthenticated API to untrusted networks or use it as a multi-user document service.</div>
+</section>
+<section id="learnings">
+<h2>10. Results & Engineering Learnings</h2>
+<p>The project establishes a working document-to-retrieval baseline with explicit input boundaries, chunk-level persistence and traceable keyword results. Its main engineering outcome is the end-to-end connection between upload validation, text preparation, transactional storage and deterministic retrieval behind a small API.</p>
+<ul>
+<li>File validation and explicit error responses make ingestion behaviour predictable.</li>
+<li>Chunk overlap provides continuity between adjacent text segments without requiring a vector index.</li>
+<li>Persisting document identifiers and chunk metadata supports source traceability.</li>
+<li>Deterministic lexical scoring provides a transparent baseline that can later be compared with semantic retrieval.</li>
+<li>Keeping future graph and recommendation modules explicitly unimplemented avoids presenting placeholders as working capabilities.</li>
+</ul>
+<p>Future increments could introduce additional document formats, embedding generation, vector retrieval, answer generation, identity controls and cloud storage. Each would require its own implementation, tests and evidence before being represented as an available capability.</p>
+</section>
+<section id="source">
+<h2>11. Source & Documentation</h2>
+<p>The repository contains the FastAPI application, document and search agents, text-processing and SQLite services, workflow, automated tests, Docker configuration, README and current architecture diagram.</p>
+<div class="actions"><a class="btn" href="https://github.com/Rebs707/enterprise-knowledge-platform" target="_blank" rel="noopener noreferrer">Open Enterprise Knowledge Platform on GitHub ↗</a><a class="btn secondary" href="https://github.com/Rebs707/enterprise-knowledge-platform/blob/main/README.md" target="_blank" rel="noopener noreferrer">Read Project README ↗</a><a class="btn secondary" href="https://github.com/Rebs707/enterprise-knowledge-platform/blob/main/diagrams/enterprise-knowledge-platform-architecture.md" target="_blank" rel="noopener noreferrer">Architecture Notes ↗</a></div>
+</section>
+</div></div>
+</main>
+<footer><div class="container"><span>© 2026 Rabeka Alexander · Cloud Infrastructure & Platform Engineering</span><a href="../../index.html">Back to Engineering Portfolio ↗</a></div></footer>
+</body>
+</html>
