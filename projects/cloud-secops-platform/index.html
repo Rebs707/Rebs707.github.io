@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080e1b">
+<meta name="description" content="CloudSecOps Platform case study: an evidence-driven security assessment prototype with configuration analysis, dependency rules, threat-event patterns, compliance checks, FastAPI and hardened Docker runtime.">
+<title>CloudSecOps Platform | Rabeka Alexander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080e1b;--surface:#0e1728;--surface2:#121f34;--border:rgba(135,166,210,.16);--text:#edf4ff;--muted:#9aabc3;--blue:#58a6ff;--cyan:#65d9e8;--green:#8bd5a8;--amber:#f1c879;--max:1160px}
+*{margin:0;padding:0;box-sizing:border-box;scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 80% 0%,rgba(34,92,170,.16),transparent 35%),radial-gradient(ellipse at 0% 45%,rgba(25,111,145,.08),transparent 32%),var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;line-height:1.7}
+a{color:inherit;text-decoration:none}.container{width:min(var(--max),calc(100% - 48px));margin:auto}
+header{border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;background:rgba(8,14,27,.94);backdrop-filter:blur(14px)}
+.nav{min-height:70px;display:flex;justify-content:space-between;align-items:center;gap:20px}.logo{font-family:"Space Grotesk",sans-serif;font-size:19px;font-weight:700;letter-spacing:-.5px}.logo span{color:var(--blue)}
+.nav-links{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:var(--muted)}.nav-links a:hover,.back-link:hover{color:var(--cyan)}
+.hero{padding:82px 0 48px}.eyebrow{color:var(--cyan);text-transform:uppercase;letter-spacing:2px;font-size:11px;font-weight:700;margin-bottom:18px}
+h1,h2,h3{font-family:"Space Grotesk",sans-serif;line-height:1.25}h1{font-size:clamp(36px,6vw,58px);letter-spacing:-2px;max-width:900px;margin-bottom:20px}
+.hero-description{color:var(--muted);max-width:850px;font-size:16px}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.meta span,.tag{border:1px solid var(--border);background:var(--surface);border-radius:30px;padding:6px 12px;font-size:11px;color:var(--muted)}
+.actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-block;padding:11px 17px;border-radius:7px;background:var(--blue);color:#07101e;font-size:13px;font-weight:700}.btn.secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:45px;padding:30px 0 90px}.sidebar{position:sticky;top:100px;align-self:start;border-left:1px solid var(--border);padding-left:18px}
+.sidebar strong{display:block;font-size:12px;margin-bottom:15px}.sidebar a{display:block;font-size:12px;color:var(--muted);padding:7px 0}.sidebar a:hover{color:var(--cyan)}
+.content section{padding:0 0 42px;margin-bottom:34px;border-bottom:1px solid var(--border);scroll-margin-top:100px}.content h2{font-size:25px;margin-bottom:18px}.content h3{font-size:16px;margin:23px 0 10px}.content p{color:var(--muted);font-size:14px;margin-bottom:14px}
+.content ul,.content ol{color:var(--muted);padding-left:22px;font-size:14px}.content li{margin:7px 0}
+.panel{background:linear-gradient(145deg,var(--surface),rgba(18,31,52,.75));border:1px solid var(--border);border-radius:12px;padding:21px;margin:17px 0}.panel h3{margin-top:0;color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:17px}.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px}.card h3{margin:0 0 8px;font-size:15px}.card p{margin:0;font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.architecture{border:1px solid rgba(101,217,232,.25);border-radius:12px;background:rgba(20,50,75,.16);padding:22px;margin:20px 0}
+.arch-row{display:flex;justify-content:center;align-items:stretch;gap:9px;flex-wrap:wrap}.arch-node{flex:1 1 145px;max-width:230px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 10px;text-align:center;font-size:12px;color:var(--cyan)}
+.arch-node small{display:block;color:var(--muted);font-size:10px;margin-top:5px}.arch-arrow{text-align:center;color:var(--blue);font-size:20px;padding:5px}
+.note{border-left:3px solid var(--blue);padding:13px 17px;background:rgba(88,166,255,.07);margin:17px 0;color:var(--muted);font-size:13px}
+.status{display:inline-block;border:1px solid rgba(139,213,168,.28);color:var(--green);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}
+.warning{border-left-color:var(--amber);background:rgba(241,200,121,.06)}
+code{font-family:Consolas,monospace;color:#b9dcff;background:rgba(88,166,255,.08);padding:2px 5px;border-radius:4px;font-size:.92em}
+footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);font-size:12px}footer .container{display:flex;justify-content:space-between;flex-wrap:wrap;gap:15px}
+@media(max-width:800px){.layout{grid-template-columns:1fr;gap:28px}.sidebar{position:static;display:flex;flex-wrap:wrap;gap:9px 16px;border-left:0;border-bottom:1px solid var(--border);padding:0 0 17px}.sidebar strong{width:100%}.sidebar a{padding:0}}
+@media(max-width:540px){.container{width:min(100% - 30px,var(--max))}.hero{padding:52px 0 32px}.nav{padding:12px 0;align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.grid{grid-template-columns:1fr}.content h2{font-size:22px}.architecture{padding:14px 9px}}
+</style>
+</head>
+<body>
+<header><div class="container nav">
+<a class="logo" href="../../index.html">RABEKA ALEXANDER<span>.</span></a>
+<nav class="nav-links" aria-label="Main navigation">
+<a href="../../index.html">Home</a><a href="../../index.html#engineering">Engineering</a><a href="../../index.html#research">Research</a><a href="../../index.html#writing">Writing</a><a href="../../index.html#contact">Contact</a>
+</nav></div></header>
+<main class="container">
+<section class="hero">
+<div class="eyebrow">Engineering Case Study / Cloud Security & Platform Engineering</div>
+<h1>CloudSecOps Platform: Evidence-Driven Security Assessment</h1>
+<p class="hero-description">A modular CloudSecOps prototype that turns caller-supplied infrastructure configuration, dependency declarations, security events and control outcomes into a structured security assessment. Four focused analysis agents feed a FastAPI workflow that aggregates findings, severity counts, recommendations and a bounded risk score.</p>
+<div class="meta"><span>Python</span><span>FastAPI</span><span>Pydantic</span><span>Multi-Agent Workflow</span><span>Cloud Security</span><span>Docker</span><span>pytest</span></div>
+<div class="actions"><a class="btn" href="https://github.com/Rebs707/cloud-secops-platform" target="_blank" rel="noopener noreferrer">View GitHub Repository ↗</a><a class="btn secondary" href="../../index.html#engineering">Back to Engineering Portfolio</a></div>
+</section>
+<div class="layout">
+<aside class="sidebar"><strong>CASE STUDY CONTENTS</strong>
+<a href="#overview">01. Overview</a><a href="#problem">02. Problem Definition</a><a href="#architecture">03. Architecture</a><a href="#agents">04. Analysis Agents</a><a href="#stack">05. Technology Stack</a><a href="#implementation">06. Implementation</a><a href="#decisions">07. Engineering Decisions</a><a href="#validation">08. Testing & Validation</a><a href="#boundaries">09. Scope & Limitations</a><a href="#learnings">10. Results & Learnings</a><a href="#source">11. Source & Documentation</a></aside>
+<div class="content">
+<section id="overview">
+<h2>01. Project Overview</h2>
+<p>CloudSecOps Platform is an evidence-driven security assessment prototype. It accepts a structured description of a resource and evaluates only the evidence included in that request. Its purpose is to demonstrate how security checks can be separated into focused components, orchestrated through an API and returned as a consistent assessment rather than a collection of unrelated scripts.</p>
+<p>The workflow coordinates four analysis agents: configuration security, dependency-rule analysis, security-event pattern detection and compliance-control evaluation. A central workflow normalizes and aggregates their findings into a single response.</p>
+<div class="panel"><h3>Project objectives</h3><ul>
+<li>Define a typed request contract for resource configuration, package versions, event records and control outcomes.</li>
+<li>Separate security analysis into independently understandable agent components.</li>
+<li>Normalize findings with severity, evidence, description, source and remediation guidance.</li>
+<li>Aggregate agent outputs into a bounded risk score and an overall assessment status.</li>
+<li>Expose the workflow through a small FastAPI service with health and rule-discovery endpoints.</li>
+<li>Package the service in a hardened, non-root Docker container.</li>
+</ul></div>
+<p><span class="status">Prototype · Local validation</span> The application was tested locally and in a Docker container. No cloud account or live infrastructure is queried or modified by the current implementation.</p>
+</section>
+<section id="problem">
+<h2>02. Problem Definition</h2>
+<p>Cloud security assessments often draw on different kinds of evidence: configuration settings, software dependencies, operational events and control checks. When each check is implemented independently, it can be difficult to present a consistent view of findings, severity, evidence and recommended action.</p>
+<div class="grid">
+<div class="card"><h3>Fragmented evidence</h3><p>Configuration, package, event and control observations arrive in different shapes and need a common assessment structure.</p></div>
+<div class="card"><h3>Inconsistent findings</h3><p>Without a shared finding model, severity, evidence and remediation guidance can vary across individual checks.</p></div>
+<div class="card"><h3>Orchestration requirement</h3><p>Independent analysis components need a clear execution path and one response contract for API consumers.</p></div>
+<div class="card"><h3>Assessment boundaries</h3><p>Missing evidence must not be interpreted as proof of security. The workflow distinguishes an unassessed resource from one with no issues detected in the checks performed.</p></div>
+</div>
+</section>
+<section id="architecture">
+<h2>03. Architecture & System Design</h2>
+<p>The implementation uses a synchronous request/response workflow. FastAPI validates the incoming payload with Pydantic, the workflow invokes the four analysis components, and their results are combined into a structured response.</p>
+<div class="architecture" role="img" aria-label="CloudSecOps request flow through FastAPI, Pydantic validation, four analysis agents, finding aggregation and structured security report">
+<div class="arch-row"><div class="arch-node">API caller<small>Resource evidence payload</small></div></div>
+<div class="arch-arrow">↓ JSON request</div>
+<div class="arch-row"><div class="arch-node">FastAPI endpoint<small>POST /secops/scan</small></div><div class="arch-node">Pydantic schemas<small>Request validation · typed response</small></div></div>
+<div class="arch-arrow">↓ validated request</div>
+<div class="arch-row"><div class="arch-node">Security scan agent<small>Configuration checks</small></div><div class="arch-node">Vulnerability agent<small>Local package rules</small></div><div class="arch-node">Threat detection agent<small>Event patterns</small></div><div class="arch-node">Compliance agent<small>Control outcomes</small></div></div>
+<div class="arch-arrow">↓ agent results</div>
+<div class="arch-row"><div class="arch-node">SecOps workflow<small>Finding aggregation · severity counts · risk score · status</small></div></div>
+<div class="arch-arrow">↓</div>
+<div class="arch-row"><div class="arch-node">Structured ScanResponse<small>Findings · evidence · recommendations · limitations</small></div></div>
+</div>
+<h3>API surface</h3>
+<ul>
+<li><code>GET /health</code> returns service health status.</li>
+<li><code>GET /secops/rules</code> describes the configuration checks, event patterns, compliance controls and illustrative package catalogue.</li>
+<li><code>POST /secops/scan</code> accepts resource evidence and returns the aggregated assessment.</li>
+<li>FastAPI provides interactive API documentation at <code>/docs</code>.</li>
+</ul>
+</section>
+<section id="agents">
+<h2>04. Analysis Agents</h2>
+<div class="panel"><h3>SecurityScanAgent — configuration analysis</h3><p>Evaluates explicitly supplied flags for public access, encryption, logging and MFA. It creates findings only when a relevant setting is present and indicates a risky state; missing or null settings are not silently treated as secure or insecure.</p></div>
+<div class="panel"><h3>VulnerabilityAgent — dependency rule analysis</h3><p>Checks package names and versions against a small local illustrative catalogue. The current examples cover legacy release lines for Django, Flask and Requests. This is a deterministic demonstration rule set, not a live CVE feed, vulnerability database or exploitability assessment.</p></div>
+<div class="panel"><h3>ThreatDetectionAgent — event pattern analysis</h3><p>Inspects supplied event records for failed login/authentication outcomes and privilege-escalation or policy-change event types. These are deterministic patterns over request data, not machine-learning detection, behavioural analytics or live SIEM ingestion.</p></div>
+<div class="panel"><h3>ComplianceAgent — control evaluation</h3><p>Evaluates supplied outcomes for encryption at rest, audit logging, least privilege and MFA. Explicit false values create findings; missing or null control values remain unassessed. The result is a technical control check, not formal compliance certification.</p></div>
+</section>
+<section id="stack">
+<h2>05. Technology Stack</h2>
+<div class="tags"><span class="tag">Python 3.10</span><span class="tag">FastAPI</span><span class="tag">Pydantic v2</span><span class="tag">Uvicorn</span><span class="tag">pytest</span><span class="tag">HTTPX</span><span class="tag">Docker</span><span class="tag">Linux</span><span class="tag">Git & GitHub</span></div>
+<div class="panel"><h3>Technology responsibilities</h3><ul>
+<li><strong>FastAPI:</strong> exposes the scan, health and rule-catalogue endpoints.</li>
+<li><strong>Pydantic:</strong> validates incoming request fields and defines structured finding and response models.</li>
+<li><strong>Python modules:</strong> isolate the agents, shared finding helpers, schemas and orchestration workflow.</li>
+<li><strong>pytest and HTTPX:</strong> exercise agent behaviour, workflow aggregation and API contracts.</li>
+<li><strong>Docker:</strong> packages the service into a container with a non-root runtime identity and restrictive runtime settings.</li>
+</ul></div>
+</section>
+<section id="implementation">
+<h2>06. Implementation Walkthrough</h2>
+<div class="panel"><h3>Phase 1 — Typed evidence contract</h3><p><code>ScanRequest</code> accepts a resource identifier and type, a configuration dictionary, a package-to-version dictionary, a bounded list of event records and a dictionary of compliance control outcomes. Unknown top-level fields are rejected. The response model defines findings, agent results, severity summaries, overall status and limitations.</p></div>
+<div class="panel"><h3>Phase 2 — Independent analysis components</h3><p>Each agent receives the normalized request data and returns an <code>AgentResult</code> containing its status, findings and number of checks performed. Shared finding helpers keep the finding shape and per-agent status logic consistent.</p></div>
+<div class="panel"><h3>Phase 3 — Workflow aggregation</h3><p><code>SecOpsWorkflow</code> invokes the four agents, combines their findings, counts severities and calculates a bounded score. Severity weights are critical 40, high 25, medium 15, low 5 and informational 0; the aggregate is capped at 100. Overall status prioritizes critical findings, then high-risk findings, then review-required findings. With no findings and no checks performed, the result is <code>not_assessed</code>.</p></div>
+<div class="panel"><h3>Phase 4 — API and container delivery</h3><p>The FastAPI router exposes the workflow without coupling API handlers to individual agent implementations. The Dockerfile creates a system user, installs pinned dependencies, copies the application and runs Uvicorn as that non-root user. The runtime was started with a read-only root filesystem, a restricted temporary filesystem, dropped Linux capabilities and no-new-privileges.</p></div>
+</section>
+<section id="decisions">
+<h2>07. Engineering Decisions & Trade-offs</h2>
+<div class="grid">
+<div class="card"><h3>Evidence-first assessment</h3><p>Only supplied values are evaluated. Missing configuration or control data is left unassessed rather than converted into a clean result.</p></div>
+<div class="card"><h3>Deterministic local rules</h3><p>Local rules keep behaviour reproducible and testable. They are deliberately not presented as live threat intelligence or authoritative vulnerability coverage.</p></div>
+<div class="card"><h3>Shared finding contract</h3><p>A common schema makes findings from different agents easier to aggregate, test, display and extend.</p></div>
+<div class="card"><h3>Bounded risk score</h3><p>Severity weights provide a simple prioritisation indicator. The score is not a probability of compromise or a calibrated enterprise risk metric.</p></div>
+<div class="card"><h3>Non-root container</h3><p>The service runs as an unprivileged user, with read-only filesystem and capability restrictions applied at runtime to reduce container privileges.</p></div>
+<div class="card"><h3>Prototype boundary</h3><p>The current service is stateless and request-driven. Cloud connectors, identity controls, persistence and production operational controls are not part of this implementation.</p></div>
+</div>
+</section>
+<section id="validation">
+<h2>08. Testing & Validation</h2>
+<p>The following checks were performed in the local WSL Ubuntu environment during the project validation.</p>
+<div class="grid">
+<div class="card"><h3>Automated tests <span class="status">Passed</span></h3><p>11 pytest tests passed, covering configuration risks, package rules, event patterns, compliance controls, API responses, request validation, health and rule discovery.</p></div>
+<div class="card"><h3>Python compilation <span class="status">Passed</span></h3><p><code>python -m compileall -q app tests</code> completed without compilation errors.</p></div>
+<div class="card"><h3>Docker image <span class="status">Built</span></h3><p>The application image built successfully using the Docker CLI.</p></div>
+<div class="card"><h3>Container runtime <span class="status">Healthy</span></h3><p>The container started and remained healthy. The health endpoint returned HTTP 200 from the running container.</p></div>
+<div class="card"><h3>API smoke test <span class="status">HTTP 200</span></h3><p>The corrected structured scan request was accepted by <code>POST /secops/scan</code>. The rules endpoint also returned its catalogue.</p></div>
+<div class="card"><h3>Runtime hardening <span class="status">Applied</span></h3><p>The container was run as the configured non-root user with a read-only root filesystem, dropped capabilities, no-new-privileges and a restricted tmpfs.</p></div>
+</div>
+<div class="note warning">Docker Compose was not used for runtime validation because the Compose plugin was unavailable in the local WSL environment. The image was built and the container was run and tested with the Docker CLI. The Compose file is included in the repository but was not independently validated here.</div>
+</section>
+<section id="boundaries">
+<h2>09. Scope, Limitations & Security Boundaries</h2>
+<div class="panel"><h3>What the implementation does</h3><ul>
+<li>Analyses only configuration, package, event and control evidence supplied in the request.</li>
+<li>Applies deterministic local checks and returns structured findings with evidence and recommendations.</li>
+<li>Aggregates results from four independent analysis components.</li>
+<li>Runs as a locally containerised API service.</li>
+</ul></div>
+<div class="panel"><h3>What it does not currently do</h3><ul>
+<li>It does not connect to or inspect AWS, Azure, GCP, Kubernetes or SIEM environments.</li>
+<li>It does not retrieve live CVEs, threat feeds or vulnerability intelligence.</li>
+<li>It does not use a trained AI model or behavioural analytics for event detection.</li>
+<li>It does not provide formal compliance certification or independent audit evidence.</li>
+<li>It does not include API authentication, authorization, tenant isolation, rate limiting or persistent audit storage.</li>
+<li>It should not be exposed to the public internet or supplied with credentials, secrets or sensitive production logs.</li>
+</ul></div>
+<div class="note warning">This is a deterministic engineering prototype, not a production security product. Its risk score is a prioritisation aid based on supplied evidence, not a probability of compromise. No cloud resources were provisioned, scanned or changed by this project.</div>
+</section>
+<section id="learnings">
+<h2>10. Results & Engineering Learnings</h2>
+<p>The project establishes a modular pattern for bringing heterogeneous security evidence into a common assessment workflow. Its strongest engineering outcome is the separation between evidence contracts, focused analysis components, shared finding models and central aggregation.</p>
+<ul>
+<li>Typed request models make the evidence expected by each analysis path explicit and reject malformed top-level input.</li>
+<li>Independent agents make checks easier to reason about and test in isolation.</li>
+<li>Shared finding structures make aggregation and API responses predictable.</li>
+<li>Explicit unassessed states prevent missing data from being mistaken for a secure result.</li>
+<li>Container hardening can be incorporated into a small API prototype without claiming a production deployment.</li>
+</ul>
+<p>Future engineering iterations could add carefully scoped cloud evidence adapters, maintained vulnerability intelligence, authenticated API access, durable audit records, richer event normalization and integration tests. Those are future directions, not capabilities of the current version.</p>
+</section>
+<section id="source">
+<h2>11. Source & Documentation</h2>
+<p>The repository contains the FastAPI application, four agents, Pydantic schemas, workflow aggregation, tests, Docker configuration, architecture notes and setup documentation.</p>
+<div class="actions"><a class="btn" href="https://github.com/Rebs707/cloud-secops-platform" target="_blank" rel="noopener noreferrer">Open CloudSecOps Platform on GitHub ↗</a><a class="btn secondary" href="https://github.com/Rebs707/cloud-secops-platform/blob/main/README.md" target="_blank" rel="noopener noreferrer">Read Project README ↗</a><a class="btn secondary" href="https://github.com/Rebs707/cloud-secops-platform/blob/main/diagrams/cloud-secops-architecture.md" target="_blank" rel="noopener noreferrer">Architecture Notes ↗</a></div>
+</section>
+</div></div>
+</main>
+<footer><div class="container"><span>© 2026 Rabeka Alexander · Cloud Infrastructure & Platform Engineering</span><a href="../../index.html">Back to Engineering Portfolio ↗</a></div></footer>
+</body>
+</html>
