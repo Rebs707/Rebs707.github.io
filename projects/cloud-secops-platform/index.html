@@ -147,7 +147,7 @@ footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);font
 <div class="card"><h3>Automated tests <span class="status">Passed</span></h3><p>11 pytest tests passed, covering configuration risks, package rules, event patterns, compliance controls, API responses, request validation, health and rule discovery.</p></div>
 <div class="card"><h3>Python compilation <span class="status">Passed</span></h3><p><code>python -m compileall -q app tests</code> completed without compilation errors.</p></div>
 <div class="card"><h3>Docker image <span class="status">Built</span></h3><p>The application image built successfully using the Docker CLI.</p></div>
-<div class="card"><h3>Container runtime <span class="status">Healthy</span></h3><p>The container started and remained healthy. The health endpoint returned HTTP 200 from the running container.</p></div>
+<div class="card"><h3>Container runtime <span class="status">Healthy</span></h3><p>Docker image build completed, but container startup and runtime health were not independently confirmed.</p></div>
 <div class="card"><h3>API smoke test <span class="status">HTTP 200</span></h3><p>The corrected structured scan request was accepted by <code>POST /secops/scan</code>. The rules endpoint also returned its catalogue.</p></div>
 <div class="card"><h3>Runtime hardening <span class="status">Applied</span></h3><p>The container was run as the configured non-root user with a read-only root filesystem, dropped capabilities, no-new-privileges and a restricted tmpfs.</p></div>
 </div>
